@@ -46,11 +46,11 @@ sh build.sh
 
 - `DSH_DEV_HOME_URL`：可信 HTTPS 地址，直接返回 `.tar.gz` 开发环境归档。归档根目录应直接包含 `runtime/`、`dshroot/`、`.dsh/` 和 `rish/`，不要再套一层目录；至少提供 `.dsh` 下构建所需的配置文件。不得包含 API 凭证或 `.credentials.yaml`。
 - `DSH_DEV_HOME_TOKEN`：可选的 Bearer token；公开或预签名下载地址可不设置。
-- `ANDROID_KEYSTORE_BASE64`：`release.jks` 的单行 Base64 内容。
-- `KEYSTORE_PASS`：签名密钥口令。
+- `ANDROID_KEYSTORE_BASE64`：可选，`release.jks` 的单行 Base64 内容；若不设置，workflow 会为本次构建生成临时签名密钥。
+- `KEYSTORE_PASS`：使用自有 keystore 时必填；自动生成密钥时可不设置。
 - `KEYSTORE_ALIAS`：可选；未设置时默认为 `dsh`。
 
-构建成功后，在该次 workflow run 的 **Artifacts** 中下载 `DeepSeekHarness-<run number>`。APK 有效期为 14 天；签名密钥只在 runner 临时写入，且不会作为 artifact 上传。
+构建成功后，在该次 workflow run 的 **Artifacts** 中下载 `DeepSeekHarness-<run number>`。APK 有效期为 14 天；keystore 不会作为 artifact 上传。临时密钥适合个人首次安装；之后每次构建都会生成新签名，不能直接覆盖安装旧版本，需先卸载（应用数据也会清除）。需要保留应用数据并覆盖升级时，请配置固定的 `ANDROID_KEYSTORE_BASE64` 与 `KEYSTORE_PASS`。
 
 ## build.sh 关键点
 

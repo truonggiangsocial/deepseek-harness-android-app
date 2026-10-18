@@ -128,11 +128,25 @@ jobs:
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
         run: |
           set -euo pipefail
-          if [[ -z "$ANDROID_KEYSTORE_BASE64" || -z "$KEYSTORE_PASS" ]]; then
-            echo "Missing repository secrets ANDROID_KEYSTORE_BASE64 or KEYSTORE_PASS." >&2
-            exit 1
+          KEYSTORE_ALIAS="${KEYSTORE_ALIAS:-dsh}"
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" ]]; then
+            if [[ -z "$KEYSTORE_PASS" ]]; then
+              echo "KEYSTORE_PASS is required when using ANDROID_KEYSTORE_BASE64." >&2
+              exit 1
+            fi
+            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android-app/release.jks
+          else
+            KEYSTORE_PASS="${KEYSTORE_PASS:-$(openssl rand -hex 24)}"
+            keytool -genkeypair -noprompt \
+              -keystore android-app/release.jks \
+              -storetype JKS \
+              -storepass "$KEYSTORE_PASS" \
+              -keypass "$KEYSTORE_PASS" \
+              -alias "$KEYSTORE_ALIAS" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=DeepSeek Harness, OU=Personal, O=DeepSeek Harness, L=Unknown, ST=Unknown, C=US"
           fi
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android-app/release.jks
+          export KEYSTORE_PASS KEYSTORE_ALIAS
           trap 'rm -f android-app/release.jks' EXIT
           (cd android-app && bash build.sh)
           test -s android-app/DeepSeekHarness.apk
