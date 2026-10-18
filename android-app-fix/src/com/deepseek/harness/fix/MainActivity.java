@@ -45,21 +45,21 @@ public class MainActivity extends Activity {
         File ds = new File(root, "dshroot");
         String base = ds + "/lib/node_modules/@deepseek-ai/dsh/";
         String nbase = ds + "/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/";
-        items.add(new Item("内核入口 bin.js", base + "lib/bin.js", null));
-        items.add(new Item("侧栏改造 layout/client.js", nbase + "dsh-client-ui-layout/lib/client.js", "gridColumn"));
-        items.add(new Item("插件按钮 cordis/client.js", nbase + "dsh-client-ui-cordis/lib/client.js", "header.utilities"));
-        items.add(new Item("特权降级 shizuku/client.js", nbase + "dsh-tool-shizuku/lib/index.js", "privilegedAvailable"));
-        items.add(new Item("特权降级 android/client.js", nbase + "dsh-tool-android/lib/index.js", "privilegedAvailable"));
-        items.add(new Item("AI 通知工具 android_notify", nbase + "dsh-tool-shizuku/lib/index.js", "android_notify"));
-        items.add(new Item("移动端样式 mobile.css", nbase + "dsh-web-frontend/dist/mobile.css", null));
-        items.add(new Item("移动端脚本 mobile.js", nbase + "dsh-web-frontend/dist/mobile.js", null));
-        items.add(new Item("前端入口 index.html", nbase + "dsh-web-frontend/dist/index.html", null));
-        items.add(new Item("完成标记 .complete", ds + "/.complete", null));
-        items.add(new Item("版本标记 REVISION", ds + "/REVISION", null));
+        items.add(new Item("Kernel entry bin.js", base + "lib/bin.js", null));
+        items.add(new Item("Sidebar layout client.js", nbase + "dsh-client-ui-layout/lib/client.js", "gridColumn"));
+        items.add(new Item("Plugin button cordis client.js", nbase + "dsh-client-ui-cordis/lib/client.js", "header.utilities"));
+        items.add(new Item("Shizuku privilege fallback", nbase + "dsh-tool-shizuku/lib/index.js", "privilegedAvailable"));
+        items.add(new Item("Android privilege fallback", nbase + "dsh-tool-android/lib/index.js", "privilegedAvailable"));
+        items.add(new Item("AI notification tool", nbase + "dsh-tool-shizuku/lib/index.js", "android_notify"));
+        items.add(new Item("Mobile styles mobile.css", nbase + "dsh-web-frontend/dist/mobile.css", null));
+        items.add(new Item("Mobile script mobile.js", nbase + "dsh-web-frontend/dist/mobile.js", null));
+        items.add(new Item("Frontend entry index.html", nbase + "dsh-web-frontend/dist/index.html", null));
+        items.add(new Item("Completion marker .complete", ds + "/.complete", null));
+        items.add(new Item("Version marker REVISION", ds + "/REVISION", null));
         setContentView(buildUi());
         log(hasStoragePermission()
                 ? "✅ 存储权限：已授予，可以检测"
-                : "⚠️ 存储权限：未授予 —— 请先点下方按钮授权，否则检测结果全部为 ❌");
+                : "⚠️ Storage access not granted. Grant access below or all checks will fail.");
     }
 
     private View buildUi() {
@@ -69,13 +69,13 @@ public class MainActivity extends Activity {
         col.setPadding(24, 24, 24, 24);
 
         TextView title = new TextView(this);
-        title.setText("DeepSeek Harness 修复工具");
+        title.setText("DeepSeek Harness Repair Tool");
         title.setTextSize(20);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         col.addView(title);
 
         TextView sub = new TextView(this);
-        sub.setText("检测并修复 DSH 运行环境（外部 dshroot 完整性 / 补丁触发 / 相册保护 / 架构 / 引擎）。\n修复前请先退出主 App。");
+        sub.setText("Check and repair the DSH runtime, including external dshroot integrity, patch loading, media protection, architecture, and engine files.\nClose the main app before starting a repair.");
         sub.setTextSize(13);
         sub.setPadding(0, 8, 0, 16);
         col.addView(sub);
@@ -86,14 +86,14 @@ public class MainActivity extends Activity {
         col.addView(log);
 
         btnFix = new Button(this);
-        btnFix.setText("开始检测并修复");
+        btnFix.setText("Check and repair");
         btnFix.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { runFix(); }
         });
         col.addView(btnFix);
 
         Button btnPerm = new Button(this);
-        btnPerm.setText("授予所有文件访问权限");
+        btnPerm.setText("Grant all files access");
         btnPerm.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 try {
@@ -109,11 +109,11 @@ public class MainActivity extends Activity {
         col.addView(btnPerm);
 
         Button btnMain = new Button(this);
-        btnMain.setText("打开主 App（修复后重启它）");
+        btnMain.setText("Open main app (restart after repair)");
         btnMain.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 try { startActivity(getPackageManager().getLaunchIntentForPackage(MAIN_PKG)); }
-                catch (Exception e) { log("主 App 未安装"); }
+                catch (Exception e) { log("Main app is not installed"); }
             }
         });
         col.addView(btnMain);
@@ -126,14 +126,14 @@ public class MainActivity extends Activity {
         super.onResume();
         if (log != null) {
             log.setText(hasStoragePermission()
-                    ? "✅ 存储权限：已授予，可以点「开始检测并修复」"
-                    : "⚠️ 存储权限：未授予，请先授权");
+                    ? "✅ Storage access granted. Tap Check and repair to continue."
+                    : "⚠️ Storage access not granted. Grant access to continue.");
         }
     }
 
     private void runFix() {
         if (!hasStoragePermission()) {
-            log.setText("❌ 未授予「所有文件访问」权限，无法检测。\n\n请先点击下方「授予所有文件访问权限」按钮，\n授权后再点「开始检测并修复」。");
+            log.setText("❌ All files access is required to run checks.\n\nTap Grant all files access below, then tap Check and repair.");
             return;
         }
         btnFix.setEnabled(false);
@@ -166,40 +166,40 @@ public class MainActivity extends Activity {
                 sb.append("✅ ").append(it.name).append("\n");
             } else {
                 missing++;
-                sb.append("❌ ").append(it.name).append(" 缺失/损坏");
+                sb.append("❌ ").append(it.name).append(" missing or damaged");
                 if (it.path.endsWith(".js") || it.path.endsWith(".css") || it.path.endsWith(".html")) {
-                    if (restoreAsset(it)) { fixed++; sb.append(" → 已修复 ✅"); }
-                    else sb.append(" → 修复失败 ❌");
+                    if (restoreAsset(it)) { fixed++; sb.append(" → repaired ✅"); }
+                    else sb.append(" → repair failed ❌");
                 }
                 sb.append("\n");
             }
         }
         File nomedia = new File(root, ".nomedia");
         if (nomedia.exists()) {
-            sb.append("✅ 相册保护 .nomedia（存在，0 字节为标准形态）\n");
+            sb.append("✅ Media protection .nomedia (present; an empty file is expected)\n");
         } else {
-            try { nomedia.createNewFile(); sb.append("✅ 相册保护 .nomedia 缺失 → 已创建\n"); fixed++; }
-            catch (Exception e) { sb.append("❌ .nomedia 创建失败\n"); }
+            try { nomedia.createNewFile(); sb.append("✅ Media protection .nomedia missing → created\n"); fixed++; }
+            catch (Exception e) { sb.append("❌ Could not create .nomedia\n"); }
         }
         File rev = new File(ds, "REVISION");
         String curRev = readText(rev);
         if (curRev == null || !curRev.equals(BUILTIN_REVISION)) {
-            sb.append("ℹ️ 版本标记(").append(curRev == null ? "无" : curRev)
-              .append(") 与内置 v1.3.3(").append(BUILTIN_REVISION).append(") 不同\n")
-              .append("  · 主 App 已升级到更新版本时属正常，可忽略\n")
-              .append("  · 若启动异常/补丁疑似失效：退出主 App 重启，会自动补齐\n");
+                        sb.append("ℹ️ Version marker (").append(curRev == null ? "none" : curRev)
+                            .append(") differs from bundled v1.3.3 (").append(BUILTIN_REVISION).append(")\n")
+                            .append("  · This is normal if the main app has been upgraded; you can ignore it.\n")
+                            .append("  · If startup fails or patches seem inactive, close and restart the main app to sync files.\n");
         }
-        sb.append("\n缺失 ").append(missing).append(" 项，修复 ").append(fixed).append(" 项\n");
-        if (missing > 0 && fixed > 0) sb.append("⚠️ 请退出主 App 后重启，触发自动补齐\n");
+        sb.append("\nMissing: ").append(missing).append(" · Repaired: ").append(fixed).append("\n");
+        if (missing > 0 && fixed > 0) sb.append("⚠️ Close and restart the main app to complete synchronization.\n");
         return sb.toString();
     }
 
     private void checkArch(StringBuilder sb) {
         String abi = (Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0)
                 ? Build.SUPPORTED_ABIS[0] : "?";
-        sb.append("架构: ").append(abi);
+        sb.append("Architecture: ").append(abi);
         if (abi.startsWith("armeabi-v7a") || abi.startsWith("armeabi")) {
-            sb.append(" ⚠️ 32 位设备，node 引擎(arm64)无法运行，不支持\n");
+            sb.append(" ⚠️ 32-bit device; the arm64 Node engine cannot run on this device.\n");
         } else {
             sb.append(" ✅\n");
         }
@@ -208,10 +208,10 @@ public class MainActivity extends Activity {
     private void checkMainApp(StringBuilder sb) {
         try {
             PackageInfo pi = getPackageManager().getPackageInfo(MAIN_PKG, 0);
-            sb.append("主 App: v").append(pi.versionName).append(" (versionCode ").append(pi.versionCode).append(")\n");
-            if (pi.versionCode < 5) sb.append("⚠️ 版本过旧，请升级到 v1.3.3+\n");
+            sb.append("Main app: v").append(pi.versionName).append(" (versionCode ").append(pi.versionCode).append(")\n");
+            if (pi.versionCode < 5) sb.append("⚠️ This version is outdated. Upgrade to v1.3.3 or later.\n");
         } catch (PackageManager.NameNotFoundException e) {
-            sb.append("主 App: 未安装 ❌\n");
+            sb.append("Main app: not installed ❌\n");
         }
     }
 
@@ -223,8 +223,8 @@ public class MainActivity extends Activity {
             s.close();
             ok = true;
         } catch (Exception e) { ok = false; }
-        sb.append(ok ? "引擎(3080): 运行中 ✅\n"
-                     : "引擎(3080): 未运行/未响应\n→ 可能原因：引擎崩溃、端口被占用、或首次解压未完成\n");
+        sb.append(ok ? "Engine (3080): running ✅\n"
+                 : "Engine (3080): not running or not responding\n→ Possible causes: engine crash, port conflict, or first-time extraction is incomplete.\n");
     }
 
     private boolean restoreAsset(Item it) {

@@ -395,7 +395,7 @@ public class MainActivity extends Activity {
         });
 
         statusView = new TextView(this);
-        statusView.setText("正在启动 DeepSeek Harness...");
+        statusView.setText("Starting DeepSeek Harness...");
         statusView.setTextColor(cSub());
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_body));
         statusView.setGravity(Gravity.CENTER);
@@ -529,16 +529,15 @@ public class MainActivity extends Activity {
                 @Override public void run() {
                     try {
                         new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("系统 WebView 版本过旧")
-                                .setMessage("检测到系统 WebView 内核为 Chromium " + ver
-                                        + "(DSH 界面需要 " + WEBVIEW_MIN_CHROME + " 以上)。\n\n"
-                                        + "界面可能无法正常显示（白屏/无法交互）,引擎本身不受影响。\n\n"
-                                        + "建议:1 更新\"Android System WebView\"后重试；"
-                                        + "2 安装「DeepSeek Harness 兼容版」（专为老设备优化）。")
-                                .setPositiveButton("去更新", new DialogInterface.OnClickListener() {
+                                .setTitle("System WebView is outdated")
+                                .setMessage("The installed WebView is Chromium " + ver
+                                    + " (the DSH interface requires version " + WEBVIEW_MIN_CHROME + " or later).\n\n"
+                                    + "The interface may appear blank or be unresponsive; the engine is unaffected.\n\n"
+                                    + "Update Android System WebView and try again, or install DeepSeek Harness Compatibility Edition for older devices.")
+                                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
                                     @Override public void onClick(DialogInterface d, int w) { openWebViewUpdate(); }
                                 })
-                                .setNegativeButton("继续尝试", null)
+                                .setNegativeButton("Continue anyway", null)
                                 .show();
                     } catch (Throwable ignored) {}
                 }
@@ -820,7 +819,7 @@ public class MainActivity extends Activity {
         // v1.19.7：behavior.hideButtons 里的 resetTheme 可把它隐掉
         if (conThemeFile().exists() && !bhHidden("resetTheme")) {
             box.addView(cSep(dp(10)));
-            TextView resetRow = cText("恢复默认控制台主题（console.json → .disabled-...）", 12.5f, cRed(), false);
+            TextView resetRow = cText("Restore default console theme (console.json → .disabled-...)", 12.5f, cRed(), false);
             resetRow.setPadding(0, dp(12), 0, dp(4));
             resetRow.setOnClickListener(new View.OnClickListener() {
                 @Override public void onClick(View v) { closeDialogOverlay(); conThemeReset(); }
@@ -923,7 +922,7 @@ public class MainActivity extends Activity {
                     c.setReadTimeout(5000);
                     c.setRequestProperty("User-Agent", "dsh-android");
                     int code = c.getResponseCode();
-                    if (code != 200) { c.disconnect(); if (manual) ui.post(new Runnable() { @Override public void run() { conToast("检查更新失败（网络）"); } }); return; }
+                    if (code != 200) { c.disconnect(); if (manual) ui.post(new Runnable() { @Override public void run() { conToast("Update check failed (network error)"); } }); return; }
                     InputStream in = c.getInputStream();
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     byte[] b = new byte[4096];
@@ -941,7 +940,7 @@ public class MainActivity extends Activity {
                         if (q1 >= 0 && q2 > q1) tag = json.substring(q1 + 1, q2);
                     }
                     if (tag == null || tag.isEmpty()) {
-                        if (manual) ui.post(new Runnable() { @Override public void run() { conToast("检查更新失败（响应异常）"); } });
+                        if (manual) ui.post(new Runnable() { @Override public void run() { conToast("Update check failed (unexpected response)"); } });
                         return;
                     }
                     String latest = tag.replace("v", "").replace("-lite", "").replace("-beta", "");
@@ -966,11 +965,11 @@ public class MainActivity extends Activity {
                             }
                         });
                     } else if (manual) {
-                        ui.post(new Runnable() { @Override public void run() { conToast("已是最新版本（" + fLocal + ")"); } });
+                        ui.post(new Runnable() { @Override public void run() { conToast("Already up to date (" + fLocal + ")"); } });
                     }
                 } catch (final Throwable t) {
                     // 网络失败/离线：启动时的自动检查静默跳过；手动检查给反馈
-                    if (manual) ui.post(new Runnable() { @Override public void run() { conToast("检查更新失败：" + t.getMessage()); } });
+                    if (manual) ui.post(new Runnable() { @Override public void run() { conToast("Update check failed: " + t.getMessage()); } });
                 }
             }
         }, "update-check").start();
@@ -1064,8 +1063,8 @@ public class MainActivity extends Activity {
         guidePages.clear();
 
         GuidePage p1 = new GuidePage();
-        p1.title = "存储权限"; p1.actionLabel = "去授权";
-        p1.desc = "读写手机上的文件：导入/导出内容、把 AI 生成的文件存到手机、写日志与运行数据。\n\n不给的话,AI 无法保存任何文件。";
+        p1.title = "Storage access"; p1.actionLabel = "Grant access";
+        p1.desc = "Read and write files on your phone, including imports, exports, AI-generated files, logs, and runtime data.\n\nWithout this permission, AI cannot save files.";
         p1.provider = new StatusProvider() { @Override public boolean granted() {
             return checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED;
@@ -1078,8 +1077,8 @@ public class MainActivity extends Activity {
         guidePages.add(p1);
 
         GuidePage p2 = new GuidePage();
-        p2.title = "所有文件访问"; p2.actionLabel = "去授权";
-        p2.desc = "访问手机上所有文件（Android 11 及以上需要单独授权,11 以下由存储权限覆盖）。\n\nAI 读写你的项目文件、整理文档都靠它。";
+        p2.title = "All files access"; p2.actionLabel = "Grant access";
+        p2.desc = "Access all files on your phone. Android 11 and later require separate approval; older versions use storage permission.\n\nThis lets AI read and organize your project files.";
         p2.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT >= 30) {
                 return Environment.isExternalStorageManager();
@@ -1109,8 +1108,8 @@ public class MainActivity extends Activity {
         guidePages.add(p2);
 
         GuidePage p3 = new GuidePage();
-        p3.title = "悬浮窗"; p3.actionLabel = "去授权";
-        p3.desc = "在其它应用之上显示内容：桌面小鲸鱼状态窗、虚拟屏预览窗都靠它。\n\n不给的话没有小鲸鱼，也看不到虚拟屏画面。";
+        p3.title = "Display over other apps"; p3.actionLabel = "Grant access";
+        p3.desc = "Show content over other apps, including the floating status panel and virtual screen preview.\n\nWithout this permission, these floating windows are unavailable.";
         p3.provider = new StatusProvider() { @Override public boolean granted() {
             return Settings.canDrawOverlays(MainActivity.this);
         }};
@@ -1120,8 +1119,8 @@ public class MainActivity extends Activity {
         guidePages.add(p3);
 
         GuidePage p4 = new GuidePage();
-        p4.title = "修改系统设置"; p4.actionLabel = "去授权";
-        p4.desc = "允许读写系统设置，比如调亮度、音量、保持屏幕常亮。\n\nAI 帮你改设置时需要；不给只是这类操作不可用。";
+        p4.title = "Modify system settings"; p4.actionLabel = "Grant access";
+        p4.desc = "Allow changes to system settings such as brightness, volume, and keeping the screen on.\n\nAI needs this only when you ask it to change these settings.";
         p4.provider = new StatusProvider() { @Override public boolean granted() {
             return Settings.System.canWrite(MainActivity.this);
         }};
@@ -1131,8 +1130,8 @@ public class MainActivity extends Activity {
         guidePages.add(p4);
 
         GuidePage p5 = new GuidePage();
-        p5.title = "使用情况访问"; p5.actionLabel = "去授权";
-        p5.desc = "查看应用使用时长与统计信息,AI 才能回答\"我今天用了多久微信\"这类问题。\n\n不给的话应用使用统计相关功能不可用。";
+        p5.title = "Usage access"; p5.actionLabel = "Grant access";
+        p5.desc = "View app usage duration and statistics, so AI can answer questions about how long you used an app.\n\nUsage-statistics features are unavailable without this permission.";
         p5.provider = new StatusProvider() { @Override public boolean granted() {
             AppOpsManager ops = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
             int mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
@@ -1144,8 +1143,8 @@ public class MainActivity extends Activity {
         guidePages.add(p5);
 
         GuidePage p6 = new GuidePage();
-        p6.title = "安装未知来源应用"; p6.actionLabel = "去授权";
-        p6.desc = "允许安装 APK:侧载应用、AI 帮你下载并安装应用时需要。\n\n不给的话 AI 无法替你安装应用。";
+        p6.title = "Install unknown apps"; p6.actionLabel = "Grant access";
+        p6.desc = "Allow APK installation. This is needed to sideload apps or let AI download and install an app for you.\n\nAI cannot install apps without this permission.";
         p6.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT < 26) return true;
             return getPackageManager().canRequestPackageInstalls();
@@ -1156,8 +1155,8 @@ public class MainActivity extends Activity {
         guidePages.add(p6);
 
         GuidePage p7 = new GuidePage();
-        p7.title = "忽略电池优化"; p7.actionLabel = "去授权";
-        p7.desc = "让本应用在后台常驻、不被系统提前杀掉 -- 引擎要一直在跑，这是稳定在线的前提。\n\n强烈建议授权；不给的话切后台后引擎可能被杀。";
+        p7.title = "Ignore battery optimizations"; p7.actionLabel = "Grant access";
+        p7.desc = "Keep the app running in the background. The engine must stay active to remain available.\n\nRecommended: without this permission, the system may stop the engine when the app is in the background.";
         p7.provider = new StatusProvider() { @Override public boolean granted() {
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
             return pm.isIgnoringBatteryOptimizations(getPackageName());
@@ -1168,8 +1167,8 @@ public class MainActivity extends Activity {
         guidePages.add(p7);
 
         GuidePage p8 = new GuidePage();
-        p8.title = "通知权限"; p8.actionLabel = "去授权";
-        p8.desc = "接收 AI 完成任务等通知，人不在应用里也能知道任务跑完了。\n\n不给的话收不到这些提醒（其它功能不受影响）。";
+        p8.title = "Notifications"; p8.actionLabel = "Grant access";
+        p8.desc = "Get notified when AI finishes a task, even when you are away from the app.\n\nOther features continue to work without this permission.";
         p8.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT < 33) return true;
             return checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED;
@@ -1194,8 +1193,8 @@ public class MainActivity extends Activity {
         guidePages.add(p8);
 
         GuidePage p9 = new GuidePage();
-        p9.title = "Shizuku / Root 特权（可选）"; p9.actionLabel = "去配置";
-        p9.desc = "授权后 AI 可以执行系统级操作：安装/卸载应用、改系统设置、模拟点击等。\n\n不给也完全能用 -- 文件读写、预览、编辑只需要上面的「所有文件访问」。";
+        p9.title = "Shizuku / root access (optional)"; p9.actionLabel = "Configure";
+        p9.desc = "Allows AI to perform system-level actions such as installing apps, changing settings, and simulating taps.\n\nThe app also works without it. File access, preview, and editing only require All files access.";
         p9.provider = new StatusProvider() { @Override public boolean granted() {
             // 只读缓存:root 探测在后台线程执行（probeShizuku）,不在主线程跑 su
             return (shizukuOk != null && shizukuOk) || (rootOk != null && rootOk);
@@ -1223,7 +1222,7 @@ public class MainActivity extends Activity {
         guideDots.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         head.addView(guideDots);
         TextView headTitle = new TextView(this);
-        headTitle.setText("首次使用 · 配置手机权限");
+        headTitle.setText("Welcome · Set up permissions");
         headTitle.setTextColor(cText());
         headTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         headTitle.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -1249,7 +1248,7 @@ public class MainActivity extends Activity {
         nav.setPadding(dp(20), dp(10), dp(20), dp(16));
 
         guideSkipBtn = new TextView(this);
-        guideSkipBtn.setText("跳过");
+        guideSkipBtn.setText("Skip");
         guideSkipBtn.setTextColor(cSub());
         guideSkipBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         guideSkipBtn.setPadding(dp(6), dp(10), dp(6), dp(10));
@@ -1258,7 +1257,7 @@ public class MainActivity extends Activity {
         }});
         nav.addView(guideSkipBtn);
 
-        guidePrevBtn = cButton("上一步", false);
+        guidePrevBtn = cButton("Back", false);
         LinearLayout.LayoutParams prevLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         prevLp.leftMargin = dp(8);
         guidePrevBtn.setLayoutParams(prevLp);
@@ -1267,7 +1266,7 @@ public class MainActivity extends Activity {
         }});
         nav.addView(guidePrevBtn);
 
-        guideNextBtn = cButton("下一步", true);
+        guideNextBtn = cButton("Next", true);
         LinearLayout.LayoutParams nextLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         nextLp.leftMargin = dp(8);
         guideNextBtn.setLayoutParams(nextLp);
@@ -1313,22 +1312,22 @@ public class MainActivity extends Activity {
         int total = guidePages.size() + 1;
 
         guideDots.setText(finishPage
-                ? "准备完成 · 最后一步"
-                : "第 " + (guideIndex + 1) + " / " + total + " 步");
+                ? "Almost done · Final step"
+                : "Step " + (guideIndex + 1) + " of " + total);
         guidePrevBtn.setEnabled(guideIndex > 0);
-        guideNextBtn.setText(finishPage ? "开始使用" : "下一步");
+        guideNextBtn.setText(finishPage ? "Get started" : "Next");
         guideSkipBtn.setVisibility(finishPage ? View.GONE : View.VISIBLE);
-        guideSkipBtn.setText(guideIndex == guidePages.size() - 1 ? "跳过" : "跳过这页");
+        guideSkipBtn.setText(guideIndex == guidePages.size() - 1 ? "Skip" : "Skip this step");
 
         if (finishPage) {
             TextView t = new TextView(this);
-            t.setText("配置完成");
+            t.setText("Setup complete");
             t.setTextColor(cText());
             t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
             t.setTypeface(null, android.graphics.Typeface.BOLD);
             guideBody.addView(t, cTop(dp(18)));
 
-            guideBody.addView(cText("权限可以随时在控制台的「权限」页里再改。现在可以进入 DeepSeek Harness 了。",
+            guideBody.addView(cText("You can change permissions later from the Permissions page in the console. DeepSeek Harness is ready to use.",
                     13.5f, cSub(), false), cTop(dp(10)));
 
             // AI 工作区（可选）:沿用原来的选择逻辑
@@ -1343,7 +1342,7 @@ public class MainActivity extends Activity {
             wsRow.setLayoutParams(wslp);
             LinearLayout wsLeft = new LinearLayout(this);
             wsLeft.setOrientation(LinearLayout.VERTICAL);
-            wsLeft.addView(cText("AI 工作区（可选）", 15f, cText(), true));
+            wsLeft.addView(cText("AI workspace (optional)", 15f, cText(), true));
             workspaceDescView = new TextView(this);
             workspaceDescView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             workspaceDescView.setTextColor(cSub());
@@ -1381,7 +1380,7 @@ public class MainActivity extends Activity {
         stRow.setOrientation(LinearLayout.HORIZONTAL);
         stRow.setGravity(Gravity.CENTER_VERTICAL);
         stRow.setPadding(0, dp(18), 0, 0);
-        stRow.addView(cText("当前状态：", 13f, cSub(), false));
+        stRow.addView(cText("Status: ", 13f, cSub(), false));
         TextView status = new TextView(this);
         status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         stRow.addView(status);
@@ -1400,7 +1399,7 @@ public class MainActivity extends Activity {
             try { pg.action.onClick(v); } catch (Throwable ignored) {}
         }});
         act.setEnabled(!granted);
-        if (granted) act.setText("已授权 ✓");
+        if (granted) act.setText("Granted ✓");
         guideBody.addView(act);
         guideActionBtn = act;
 
@@ -1414,7 +1413,7 @@ public class MainActivity extends Activity {
         GuidePage pg = guidePages.get(guideIndex);
         boolean granted = false;
         try { granted = pg.provider.granted(); } catch (Throwable ignored) {}
-        guideActionBtn.setText(granted ? "已授权 ✓" : pg.actionLabel);
+        guideActionBtn.setText(granted ? "Granted ✓" : pg.actionLabel);
         guideActionBtn.setEnabled(!granted);
     }
 
@@ -1429,7 +1428,7 @@ public class MainActivity extends Activity {
         for (PermRow pr : permRows) {
             boolean g = false;
             try { g = pr.provider.granted(); } catch (Throwable ignored) {}
-            pr.status.setText(g ? "已授权" : "未授权");
+            pr.status.setText(g ? "Granted" : "Not granted");
             pr.status.setTextColor(g ? cGreen() : cRed());
         }
         // 工作区行状态（非权限，显示已设置/未设置）--引导完成页与控制台「权限」页共用同一份状态
@@ -1438,11 +1437,11 @@ public class MainActivity extends Activity {
             boolean unset = (p == null || p.isEmpty());
             if (workspaceDescView != null) {
                 workspaceDescView.setText(unset
-                        ? "未设置:AI 文件操作在内部目录。点此选择外部文件夹（如 /sdcard/Documents）。"
-                        : "已设置：" + p + "（点此更改或恢复默认）");
+                        ? "Not set: AI file operations use the app's internal folder. Tap to choose a folder (for example, /sdcard/Documents)."
+                        : "Set to " + p + " (tap to change or reset)");
             }
             if (conWorkspaceDesc != null) {
-                conWorkspaceDesc.setText(unset ? "未设置（AI 文件操作在内部目录）" : p);
+                conWorkspaceDesc.setText(unset ? "Not set (AI files use the internal folder)" : p);
             }
         }
         // 翻页式引导：当前页的授权按钮状态跟着"是否已授权"走（从系统设置授权回来时刷新）
@@ -1463,19 +1462,19 @@ public class MainActivity extends Activity {
         if (cur == null || cur.isEmpty()) { openWorkspacePicker(); return; }
         try {
             new AlertDialog.Builder(this)
-                    .setTitle("AI 工作区")
-                    .setMessage("当前工作区：\n" + cur + "\n\n选择其他文件夹，或恢复默认？")
-                    .setPositiveButton("重新选择", new DialogInterface.OnClickListener() {
+                    .setTitle("AI workspace")
+                    .setMessage("Current workspace:\n" + cur + "\n\nChoose another folder or restore the default?")
+                    .setPositiveButton("Choose another", new DialogInterface.OnClickListener() {
                         @Override public void onClick(DialogInterface d, int w) { openWorkspacePicker(); }
                     })
-                    .setNegativeButton("恢复默认", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Reset to default", new DialogInterface.OnClickListener() {
                         @Override public void onClick(DialogInterface d, int w) {
                             getSharedPreferences(PREFS, MODE_PRIVATE).edit().remove(KEY_WORKSPACE).apply();
                             refreshAllStatuses();
                             refreshConsolePermIfShown();
                         }
                     })
-                    .setNeutralButton("取消", null)
+                    .setNeutralButton("Cancel", null)
                     .show();
         } catch (Throwable ignored) {}
     }
@@ -1537,9 +1536,9 @@ public class MainActivity extends Activity {
                 // 工作区的列出/打开全在应用权限下跑，进会话才报"权限不足"更费解。
                 try {
                     new AlertDialog.Builder(this)
-                            .setTitle("无法使用该目录")
-                            .setMessage("该目录当前应用无权读取（多为需要 Root 的系统目录）。\n\nDSH 引擎以应用自身权限运行，工作区请选普通存储目录（如 /sdcard/Documents）。\n\nAI 需要操作系统目录时，可直接用 Shizuku/Root 特权工具，无需设为工作区。")
-                            .setPositiveButton("知道了", null)
+                            .setTitle("Folder unavailable")
+                            .setMessage("This app cannot read the selected folder. It may be a system folder that requires root.\n\nThe DSH engine runs with this app's permissions, so choose a regular storage folder such as /sdcard/Documents.\n\nTo access system folders, use Shizuku or root tools; they do not need to be set as the workspace.")
+                            .setPositiveButton("OK", null)
                             .show();
                 } catch (Throwable ignored) {}
             } else if (path != null && !path.isEmpty()) {
@@ -1549,9 +1548,9 @@ public class MainActivity extends Activity {
             } else {
                 try {
                     new AlertDialog.Builder(this)
-                            .setTitle("无法使用该目录")
-                            .setMessage("无法解析所选文件夹的真实路径，请选择手机存储（内部存储或 SD 卡）内的文件夹。")
-                            .setPositiveButton("知道了", null)
+                            .setTitle("Folder unavailable")
+                            .setMessage("The selected folder's path could not be resolved. Choose a folder in phone storage or on an SD card.")
+                            .setPositiveButton("OK", null)
                             .show();
                 } catch (Throwable ignored) {}
             }
@@ -1672,11 +1671,11 @@ public class MainActivity extends Activity {
 
         if (rootOkNow || shizukuNow) {
             AlertDialog.Builder b = new AlertDialog.Builder(this);
-            b.setTitle("系统特权（可选）");
-            b.setMessage((rootOkNow ? "已检测到 Root(su)可用,AI 可以执行系统级操作。\n" : "") +
-                    (shizukuNow ? "Shizuku 已授权,AI 可以执行系统级操作。\n" : "") +
-                    "\n不授予特权也能正常使用：文件读写、预览、编辑只需「所有文件访问」权限。");
-            b.setNegativeButton("关闭", null);
+                b.setTitle("System access (optional)");
+                b.setMessage((rootOkNow ? "Root (su) is available. AI can perform system-level actions.\n" : "") +
+                    (shizukuNow ? "Shizuku is authorized. AI can perform system-level actions.\n" : "") +
+                    "\nThe app works without privileged access. File access, preview, and editing only require All files access.");
+                b.setNegativeButton("Close", null);
             b.show();
         } else if (binderOk) {
             // 服务在运行但未授权 → 请求 Shizuku 弹授权框；若系统/ROM 没弹出来,8 秒后引导手动授权
@@ -1768,44 +1767,44 @@ public class MainActivity extends Activity {
             CharSequence l = getApplicationInfo().loadLabel(getPackageManager());
             if (l != null && l.length() > 0) label = l + "(" + getPackageName() + ")";
         } catch (Throwable ignored) {}
-        String msg = "Shizuku 的授权框没有出现（常见于 ColorOS/OPPO 等系统拦截了它的弹窗）。"
-                + "\n\n请手动授权：\n"
-                + "1. 打开 Shizuku 应用\n"
-                + "2. 进入「已授权的应用」（或首页的「授权应用」）\n"
-                + "3. 找到 " + label + " → 打开开关\n\n"
-                + "授权后回到本页会自动刷新。";
+        String msg = "The Shizuku authorization dialog did not appear. Some system versions, including ColorOS/OPPO, may block it."
+            + "\n\nAuthorize manually:\n"
+            + "1. Open the Shizuku app\n"
+            + "2. Open Authorized applications (or Authorized apps on the home page)\n"
+            + "3. Find " + label + " and enable it\n\n"
+            + "Return to this page after authorization; the status will refresh automatically.";
         AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Shizuku 授权（需手动）");
+        b.setTitle("Shizuku authorization required");
         b.setMessage(msg);
-        b.setPositiveButton("打开 Shizuku", new DialogInterface.OnClickListener() {
+        b.setPositiveButton("Open Shizuku", new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface d, int w) { openShizukuApp(); }
         });
-        b.setNeutralButton("重新检测", new DialogInterface.OnClickListener() {
-            @Override public void onClick(DialogInterface d, int w) { probeShizuku(); conToast("已重新检测"); }
+        b.setNeutralButton("Check again", new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface d, int w) { probeShizuku(); conToast("Checked again"); }
         });
-        b.setNegativeButton("关闭", null);
+        b.setNegativeButton("Close", null);
         b.show();
     }
 
     private void fallbackShizukuDialog(boolean installed) {
         String msg;
         if (installed) {
-            msg = "Shizuku 服务未运行。\n\n请先打开 Shizuku 应用并启动服务，然后回来点击「重新检测」；服务启动后本应用会自动弹出授权对话框。";
+            msg = "The Shizuku service is not running.\n\nOpen Shizuku and start its service, then return and tap Check again. This app will request authorization once the service is running.";
         } else {
-            msg = "未检测到 Shizuku 应用。请先安装 Shizuku（官方版）,再回来授权。";
+            msg = "Shizuku was not found. Install the official Shizuku app, then return here to authorize access.";
         }
         AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Shizuku 特权");
+        b.setTitle("Shizuku access");
         b.setMessage(msg);
         if (installed) {
-            b.setPositiveButton("去启动 Shizuku", new DialogInterface.OnClickListener() {
+            b.setPositiveButton("Open Shizuku", new DialogInterface.OnClickListener() {
                 @Override public void onClick(DialogInterface d, int w) { openShizukuApp(); }
             });
         }
-        b.setNeutralButton("重新检测", new DialogInterface.OnClickListener() {
+        b.setNeutralButton("Check again", new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface d, int w) { probeShizuku(); }
         });
-        b.setNegativeButton("关闭", null);
+        b.setNegativeButton("Close", null);
         b.show();
     }
 
@@ -4229,7 +4228,7 @@ public class MainActivity extends Activity {
     private void conEngineTimedOut() {
         ui.post(new Runnable() { @Override public void run() {
             try {
-                conToast("引擎启动超时，已回到控制台；就绪后会自动进入");
+                conToast("Engine startup timed out. Returned to the console; the app will open when the engine is ready.");
                 showConsole();
                 refreshConsole();
             } catch (Throwable ignored) {}
@@ -4244,7 +4243,7 @@ public class MainActivity extends Activity {
                         starting = false;
                         ui.post(new Runnable() { @Override public void run() {
                             try {
-                                if (consoleVisible) { conToast("引擎已就绪"); enterMainUi(); refreshConsole(); }
+                                if (consoleVisible) { conToast("Engine is ready"); enterMainUi(); refreshConsole(); }
                             } catch (Throwable ignored) {}
                         }});
                         return;
@@ -4806,10 +4805,10 @@ public class MainActivity extends Activity {
                 // v1.19.x:改名之外**再留一份可恢复副本** -- 用户之后用文件管理器改动/误删也还能找回来。
                 // （主题页新增的「我保存过的主题」会把这两种都列出来，点一条即可恢复。）
                 try { copyFileShallow(f, new File(consoleDir(), "console.json.replaced-" + ts)); } catch (Throwable ignored) {}
-                if (!f.renameTo(to)) { conToast("改名失败：" + to.getName()); return; }
+                if (!f.renameTo(to)) { conToast("Rename failed: " + to.getName()); return; }
             }
         } catch (Throwable t) {
-            conToast("恢复默认失败：" + t.getMessage());
+            conToast("Could not restore defaults: " + t.getMessage());
             return;
         }
         conTheme = null;
@@ -4818,7 +4817,7 @@ public class MainActivity extends Activity {
         conThemeReloadIfChanged(true);
         conBgApply();
         renderConsole();
-        conToast("已恢复内置默认（原文件已改名留底）");
+        conToast("Built-in defaults restored (the previous file was kept as a backup)");
     }
 
     // ---------- 随包分发的四件套（规范 / schema / 示例 / 校验器） ----------
@@ -5047,7 +5046,7 @@ public class MainActivity extends Activity {
         bar.setPadding(dp(12), dp(9), dp(12), dp(9));
         bar.addView(cText("⚠ " + text, 11.5f, 0xFFF5A524, false),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        bar.addView(cText("详情 ›", 11.5f, 0xFFF5A524, false));
+        bar.addView(cText("Details ›", 11.5f, 0xFFF5A524, false));
         bar.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conThemeShowDetail(); }
         });
@@ -5135,7 +5134,7 @@ public class MainActivity extends Activity {
                 t.setTag(Boolean.valueOf(now));
                 conTogglePaint(t);
                 conSetPluginDisabled(id, !now);
-                conToast("dsh-" + id + (now ? " 已启用" : " 已关闭") + "（重启引擎生效）");
+                conToast("dsh-" + id + (now ? " enabled" : " disabled") + " (restart the engine to apply)");
                 // v1.19.6:改完立刻重绘（改完立刻重绘）--
                 // 只改自己那个 TextView 的话，页头「插件列表 · 已启用 N / M」会停在旧数字上，
                 // 用户看不出这一下生效没有（真机验收发现，正好砸在路线图3"可开可关"的反馈上）。
@@ -5147,7 +5146,7 @@ public class MainActivity extends Activity {
 
     private void conTogglePaint(TextView t) {
         boolean on = ((Boolean) t.getTag()).booleanValue();
-        t.setText(on ? "已启用" : "已关闭");
+        t.setText(on ? "Enabled" : "Disabled");
         t.setTextColor(on ? cGreen() : cSub());
         t.setBackground(cShape(on ? (conDark() ? 0x241F9D6B : 0x1A1F9D6B) : 0x00000000,
                 on ? cGreen() : cLine(), 1, 12));
@@ -5192,7 +5191,7 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        Button back = cButton("‹ 控制台", false);
+        Button back = cButton("‹ Console", false);
         back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
         back.setPadding(0, dp(4), dp(8), dp(4));
         back.setOnClickListener(new View.OnClickListener() {
@@ -5383,7 +5382,7 @@ public class MainActivity extends Activity {
                 t("desc.browser", "看 AI 正在哪一页 · 同屏查看（画面可直接操作，拖顶部小条搬窗）"),
                 conBrowserSummary(), PAGE_BROWSER));
         // issue #54:悬浮球单击 / 长按 / 双击的动作配置（默认单击=面板，长按/双击=无动作）
-        items.put("overlay", cNavRow("悬浮球", "单击 / 长按 / 双击 动作可配置",
+        items.put("overlay", cNavRow("Floating panel", "Configure tap / long-press / double-tap actions",
                 overlaySummary(), PAGE_OVERLAY));
         items.put("perm", cNavRow(t("card.perm", "授予权限"), t("desc.perm", "存储 · 通知 · 悬浮窗 · 电池 · root · Shizuku · 无障碍"),
                 conPermSummary(), 1));
@@ -5757,25 +5756,25 @@ public class MainActivity extends Activity {
         box.setOrientation(LinearLayout.VERTICAL);
         box.addView(cText(t("card.rescueDesc", "引擎起不来时，用安全模式跳过用户层启动（不丢数据）;也可以随时导出全部数据做备份。"),
                 11f, cSub(), false));
-        Button safe = cButton("安全模式启动", false);
+        Button safe = cButton("Start in Safe Mode", false);
         safe.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conSafeMode(); }
         });
         box.addView(safe, cTop(cGap(12)));
         if (bhHidden("safeMode")) safe.setVisibility(View.GONE);
-        Button exp = cButton("导出全部数据", false);
+        Button exp = cButton("Export all data", false);
         exp.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conBackupExport(); }
         });
         box.addView(exp, cTop(cGap(8)));
         if (bhHidden("export")) exp.setVisibility(View.GONE);
-        Button imp = cButton("从备份导入还原", false);
+        Button imp = cButton("Restore from backup", false);
         imp.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conBackupImport(); }
         });
         box.addView(imp, cTop(cGap(8)));
         if (bhHidden("import")) imp.setVisibility(View.GONE);
-        conDialogView("救援", box, "关闭", null, null);
+        conDialogView("Rescue", box, "Close", null, null);
     }
 
     private void renderConsoleMain() {
@@ -5836,9 +5835,207 @@ public class MainActivity extends Activity {
      */
     private String t(String key, String def) {
         ConsoleTheme ct = conTheme;
-        if (ct == null) return def;
-        String v = ct.text(key);
-        return (v == null || v.length() == 0) ? def : v;
+        if (ct != null) {
+            String v = ct.text(key);
+            if (v != null && v.length() > 0) return v;
+        }
+        return englishConsoleDefault(key, def);
+    }
+
+    private String englishConsoleDefault(String key, String fallback) {
+        switch (key) {
+            case "title.grpSessions": return "Sessions";
+            case "card.sessionadmin": return "Session manager";
+            case "desc.sessionadmin": return "Delete sessions you no longer need · moved to Trash first, so they can be restored";
+            case "card.sessionheal": return "Session repair";
+            case "desc.sessionheal": return "Repair sessions affected by broken images · only the affected message is changed";
+            case "title.grpSystem": return "System";
+            case "card.browser": return "AI browser";
+            case "desc.browser": return "See the page AI is using · show it in an interactive floating window";
+            case "card.perm": return "Permissions";
+            case "desc.perm": return "Storage · notifications · overlay · battery · root · Shizuku · accessibility";
+            case "card.plugins": return "Plugins";
+            case "desc.plugins": return "Disable unused plugins to save context";
+            case "card.log": return "Logs";
+            case "card.theme": return "Theme";
+            case "desc.theme": return "Appearance, layout, and text come from console.json · import or export here";
+            case "title.grpDiagnose": return "Diagnostics";
+            case "card.selfcheck": return "Kernel self-check";
+            case "desc.selfcheckShort": return "Manifest-based integrity check · repair ledger";
+            case "btn.extract.run": return "Extract files";
+            case "btn.engine.restart": return "Restart";
+            case "btn.engine.stop": return "Stop";
+            case "status.ready": return "Ready";
+            case "btn.rescue": return "Rescue";
+            case "card.update": return "Check for updates";
+            case "btn.shellTheme": return "App theme";
+            case "title.grpEnv": return "Runtime environment";
+            case "btn.extract.rerun": return "Extract again";
+            case "btn.extract.verify": return "Verify files";
+            case "btn.extract.detail": return "Details";
+            case "title.mypatch": return "My patches";
+            case "btn.mypatch.save": return "Save my changes as a patch";
+            case "btn.mypatch.clear": return "Clear patches (restore defaults)";
+            case "btn.mypatch.where": return "Open patch folder";
+            case "card.rescueDesc": return "If the engine will not start, use Safe Mode to skip user files without losing data. You can also export a full backup at any time.";
+            case "desc.footer": return "Re-extract after changing the kernel version or reinstalling over this app. Normally, just tap Start engine.";
+            case "btn.engine.start": return "Start engine";
+            case "status.rescue.safe": return "Safe Mode: On";
+            case "card.rescue": return "Rescue";
+            case "desc.rescue": return "If the engine will not start, use Safe Mode to skip user files without losing data. You can also export a full backup at any time.";
+            case "btn.rescue.exitSafe": return "Exit Safe Mode";
+            case "btn.rescue.safe": return "Start in Safe Mode";
+            case "btn.rescue.export": return "Export all data";
+            case "btn.rescue.import": return "Restore from backup";
+            case "card.actions": return "Custom actions";
+            case "desc.actions": return "Defined by the theme. Actions with a red outline ask for confirmation before running.";
+            case "desc.customPage": return "Custom page";
+            case "btn.theme.reload": return "Reload theme";
+            case "btn.theme.export": return "Export theme pack";
+            case "btn.theme.import": return "Import theme pack";
+            case "btn.theme.reset": return "Reset to default";
+            case "btn.theme.openDir": return "Open theme folder";
+            case "btn.theme.page": return "Theme settings";
+            case "btn.log.view": return "View";
+            case "btn.log.share": return "Share";
+            case "btn.log.clear": return "Clear";
+            case "status.theme.builtin": return "Built-in default";
+            case "status.theme.fatal": return " · fully reverted";
+            case "status.theme.reverted": return " items reverted";
+            case "title.themePage": return "Theme";
+            case "desc.themePage": return "Controls the app console appearance. Changes to the config file on your device take effect within seconds; no restart needed.";
+            case "title.themeStatus": return "Current theme";
+            case "title.grpThemeIo": return "Import / export";
+            case "desc.themeExport": return "Package the current theme as a ZIP, including console.json and images, ready to share.";
+            case "desc.themeImport": return "Install a theme from a ZIP. The current config is backed up first.";
+            case "btn.theme.backups": return "Saved themes";
+            case "desc.themeBackups": return "Restore defaults and previously imported configs from here.";
+            case "title.themeSpec": return "Specification and checks";
+            case "desc.themeSpec": return "The theme folder includes the specification, schema, examples, and a dependency-free validator.";
+            case "btn.theme.openSpec": return "Open specification";
+            case "desc.themeSpecShort": return "THEME-PACK-SPEC.md · IDs for cards, components, and actions";
+            case "desc.themeDir": return "console.json, background images, and the specification are stored here.";
+            case "btn.theme.diag": return "Diagnostics";
+            case "desc.themeDiag": return "View parse results, reverted settings, and page count.";
+            case "btn.theme.copyCheck": return "Copy validation command";
+            case "title.themeAi": return "Create a theme with AI";
+            case "desc.themeAi": return "Copy a prompt for any AI assistant, then import the ZIP it creates.";
+            case "btn.theme.copy": return "Copy";
+            case "title.grpThemeCare": return "Maintenance";
+            case "desc.themeReset": return "Rename console.json as a backup; restore it later from Saved themes.";
+            case "btn.theme.resetShort": return "Restore";
+            case "btn.theme.unsafe": return "Restore theme (currently using defaults)";
+            case "btn.theme.safe": return "Use default appearance (keep theme file)";
+            case "title.themeActions": return "Executable actions (disabled in this version)";
+            case "status.extract.running": return "Extracting...";
+            case "status.extract.done": return "Extracted";
+            case "status.extract.idle": return "Not extracted";
+            case "status.engine.ready": return "Engine running";
+            case "status.engine.starting": return "Starting...";
+            case "status.engine.idle": return "Stopped";
+            case "btn.engine.openUi": return "Open app";
+            case "status.serving": return "Local service is ready";
+            case "status.starting": return "Starting engine...";
+            case "status.extract.working": return "Extracting the runtime and kernel...";
+            case "desc.extract": return "The runtime and kernel must be extracted (about 25,000 files / 220 MB) before the engine can start.";
+            case "desc.permPage": return "Tap a row to grant or manage access. Choose either root or Shizuku (root is preferred).";
+            case "title.grpPermBasic": return "Basic permissions";
+            case "title.grpPermPriv": return "Privileged access (choose one)";
+            case "title.grpPermMore": return "More";
+            case "status.perm.granted": return "Granted";
+            case "status.perm.noroot": return "No root access";
+            case "status.perm.denied": return "Not granted";
+            case "desc.pluginsPage": return "Disabled plugins are not loaded or exposed to AI. Changes take effect after restarting the engine.";
+            case "title.grpPlugList": return "Plugin list";
+            case "btn.plugins.restart": return "Restart engine to apply";
+            case "status.browserBusy": return "Checking...";
+            case "status.browserIdle": return "Not running";
+            case "status.browserPanelOn": return "visible";
+            case "status.browserPanelOff": return "hidden";
+            case "status.browserRunning": return "Running";
+            case "btn.browser.close": return "Close browser";
+            case "desc.browserClose": return "Close all tabs and stop the browser process. The engine will keep running.";
+            case "desc.browserPage": return "The AI browser runs in a separate process. View its current page or show an interactive preview here.";
+            case "status.browserPluginOff": return "Plugin disabled";
+            case "desc.browserPluginOff": return "AI cannot use browser tools. Enable dsh-tool-browser on the Plugins page, then restart the engine.";
+            case "title.grpBrowserState": return "Browser status";
+            case "status.browserUnreachable": return "Status unavailable";
+            case "btn.browser.panel": return "Show preview";
+            case "desc.browserPanel": return "Show the page in a floating window. Drag its handle to move it; tap the handle to close it.";
+            case "title.grpBrowserTabs": return "Tabs";
+            case "status.browserNoTab": return "No tabs yet";
+            case "desc.browserNoTab": return "Tabs will appear here after AI opens a webpage.";
+            case "status.browserActive": return "Active";
+            case "btn.browser.reload": return "Refresh";
+            case "desc.browserWarn": return "The preview is interactive. Window size and AI click coordinates are unchanged. A browser crash does not affect the console or engine.";
+            case "title.grpHealProposal": return "AI repair proposals";
+            case "status.noProposal": return "No proposal files";
+            case "desc.noProposal": return "AI proposals will appear here with a summary of their requested changes.";
+            case "desc.healNoFingerprint": return " (not provided; stale-proposal check will be skipped)";
+            case "desc.healFingerprint": return "Source fingerprint: ";
+            case "btn.heal.notRunnable": return "Cannot run";
+            case "btn.heal.run": return "Run (confirmation required)";
+            case "desc.healProposalWarn": return "Running a proposal changes files in the kernel's @deepseek-ai namespace and writes an entry to the ledger.";
+            case "desc.selfcheck": return "Compare every path, size, and SHA-256 hash in the bundled manifest against the kernel files on this device.";
+            case "title.grpSelfCheckActions": return "Actions";
+            case "btn.selfcheck.quick": return "Quick check";
+            case "btn.selfcheck.full": return "Full verification";
+            case "btn.selfcheck.snapshot": return "Config snapshot";
+            case "title.grpLedger": return "Repair ledger";
+            case "card.ledger": return "Repair ledger";
+            case "desc.ledger": return "Each check and repair adds a JSON entry that AI can read to explain what changed.";
+            case "btn.selfcheck.ledger": return "View ledger";
+            case "desc.ledgerDir": return "Folder: ";
+            case "desc.selfcheckWarn": return "Self-check is read-only. Repair actions are separate and require confirmation.";
+            case "desc.sessionadminPage": return "Delete sessions by moving them to Trash first, where they can be restored.";
+            case "desc.sessionadminIdle": return "No list loaded yet. Tap Read sessions to begin; this is read-only.";
+            case "title.grpSessionList": return "Sessions";
+            case "status.readFailed": return "Read failed";
+            case "status.sessionNone": return "No sessions";
+            case "desc.sessionNone": return "Send a message in the web app and it will appear here.";
+            case "btn.session.more": return "Show more";
+            case "btn.session.load": return "Read sessions";
+            case "btn.session.reload": return "Reload";
+            case "card.sessiontrash": return "Trash";
+            case "desc.sessionadminWarn": return "Delete moves sessions to Trash; it does not permanently remove them.";
+            case "btn.session.delete": return "Delete";
+            case "status.lastOp": return "Last action";
+            case "status.done": return "Done";
+            case "status.failed": return "Failed";
+            case "desc.sessiontrashPage": return "Deleted sessions are stored here, outside the active sessions folder.";
+            case "desc.sessiontrashIdle": return "Trash has not been loaded yet. Tap Read trash.";
+            case "title.grpTrashList": return "Sessions in Trash";
+            case "status.trashEmpty": return "Trash is empty";
+            case "desc.trashEmptyHint": return "Deleted sessions will appear here.";
+            case "btn.session.loadTrash": return "Read trash";
+            case "btn.session.backAdmin": return "Back to sessions";
+            case "title.grpTrashCare": return "Maintenance";
+            case "btn.session.purgeAll": return "Empty Trash";
+            case "desc.sessionPurgeAll": return "Permanently delete every session in Trash. This cannot be undone.";
+            case "btn.session.purgeAllShort": return "Empty";
+            case "desc.sessiontrashWarn": return "Permanent deletion cannot be undone and is only available here with separate confirmation.";
+            case "btn.session.restore": return "Restore";
+            case "btn.session.purge": return "Delete permanently";
+            case "desc.sessionhealPage": return "A broken attachment can make every later message in a session fail. Scan sessions and repair only the selected one.";
+            case "status.lastHeal": return "Last repair";
+            case "status.noChange": return "No changes";
+            case "desc.sessionhealIdle": return "No scan has been run. Tap Scan sessions to start; scanning is read-only.";
+            case "title.grpSessionBad": return "Scan results";
+            case "status.scanFailed": return "Scan failed";
+            case "desc.noBadSession": return "All attachment references are valid; no repair is needed.";
+            case "desc.sessionBadHint": return "Select a session to inspect the issue and decide whether to repair it.";
+            case "title.grpSessionBadList": return "Sessions with issues";
+            case "desc.sessionNormalOther": return "other sessions have no detected issues and are not listed.";
+            case "btn.session.scan": return "Scan sessions";
+            case "btn.session.rescan": return "Scan again";
+            case "desc.sessionhealWarn": return "Only the session you select is changed. There is no bulk repair.";
+            case "desc.logPage": return "View the last 200 log lines or share logs using the Android share sheet.";
+            case "title.grpLogFile": return "Log files";
+            case "btn.log.view": return "View logs";
+            case "btn.log.clear": return "Clear logs";
+            case "desc.logClear": return "Only logs are cleared. The engine keeps running and continues writing new logs.";
+            default: return fallback;
+        }
     }
 
     /**
@@ -5953,7 +6150,7 @@ public class MainActivity extends Activity {
         box.addView(enActs, cTop(cGap(12)));
         // issue #54：classic（layout.style=classic）/ 自定义 layout.pages 没有精简骨架的「系统」分组，
         // 把入口挂在运行环境卡片里，两套界面都能进（不需要新增卡片 id、不动主题规范）。
-        box.addView(cNavRow("悬浮球", "单击 / 长按 / 双击 动作可配置", overlaySummary(), PAGE_OVERLAY), cTop(cGap(10)));
+        box.addView(cNavRow("Floating panel", "Configure tap / long-press / double-tap actions", overlaySummary(), PAGE_OVERLAY), cTop(cGap(10)));
         return box;
     }
 
@@ -6103,10 +6300,10 @@ public class MainActivity extends Activity {
             if ("clipboard".equals(ty)) {
                 String s = "token".equals(a.copy) ? conFindApiKey() : a.text;
                 if (s == null || s.length() == 0) {
-                    conToast("没找到可复制的内容" + ("token".equals(a.copy) ? "(API Key 要在 DSH 界面里设置过)" : ""));
+                    conToast("Nothing to copy" + ("token".equals(a.copy) ? " (set an API key in the DSH interface first)" : ""));
                     return;
                 }
-                conThemeCopy(s, "已复制到剪贴板");
+                conThemeCopy(s, "Copied to clipboard");
                 return;
             }
             if ("toast".equals(ty)) { conToast(a.text == null || a.text.length() == 0 ? a.label : a.text); return; }
@@ -6117,7 +6314,7 @@ public class MainActivity extends Activity {
             if ("engine.stop".equals(ty)) { conStopEngine(); return; }
             if ("extract.run".equals(ty)) { conExtractClick(); return; }
             if ("extract.verify".equals(ty)) {
-                conToast(conFilesReady() ? "运行环境与内核树已就绪 ✓" : "还没解压（缺 " + conMissingKey() + ")");
+                conToast(conFilesReady() ? "Runtime and kernel are ready ✓" : "Not extracted yet (missing " + conMissingKey() + ")");
                 return;
             }
             if ("perm.open".equals(ty)) { consolePage = 1; renderConsole(); return; }
@@ -6132,10 +6329,10 @@ public class MainActivity extends Activity {
             if ("http".equals(ty)) { conRunHttpAction(a); return; }
             if ("intent".equals(ty)) { conRunIntentAction(a); return; }
             if ("prompt".equals(ty)) { conRunPromptAction(a); return; }
-            conToast("未知动作：" + ty);
+            conToast("Unknown action: " + ty);
         } catch (Throwable t) {
             Log.e(TAG, "action run", t);
-            conToast("动作执行失败：" + t.getMessage());
+            conToast("Action failed: " + t.getMessage());
         }
     }
 
@@ -6144,7 +6341,7 @@ public class MainActivity extends Activity {
             Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
-        } catch (Throwable t) { conToast("打不开网址：" + t.getMessage()); }
+        } catch (Throwable t) { conToast("Could not open URL: " + t.getMessage()); }
     }
 
     private void conOpenAppSettings() {
@@ -6153,7 +6350,7 @@ public class MainActivity extends Activity {
             i.setData(Uri.fromParts("package", getPackageName(), null));
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
-        } catch (Throwable t) { conToast("打不开设置页：" + t.getMessage()); }
+        } catch (Throwable t) { conToast("Could not open settings: " + t.getMessage()); }
     }
 
     /** 尽力而为：从引擎配置里把 API Key 抠出来（找不到就返回 null,由调用方如实提示）。 */
@@ -6175,7 +6372,7 @@ public class MainActivity extends Activity {
 
     /** shell 动作：特权走 Shizuku（复用既有通道）,否则用 App 身份跑；结果弹窗展示。 */
     private void conRunShellAction(final ConsoleTheme.Act a) {
-        conToast("正在执行...");
+        conToast("Running action...");
         new Thread(new Runnable() { @Override public void run() {
             final String result;
             if (a.privileged) {
@@ -6217,7 +6414,7 @@ public class MainActivity extends Activity {
     private void conShowShellResult(ConsoleTheme.Act a, String result) {
         String body = result == null ? "（无输出）" : result;
         if (body.length() > 4000) body = body.substring(0, 4000) + "...";
-        TextView tv = cText("「" + a.label + "」\n命令：" + a.cmd + "\n\n" + body, 11.5f, cSub(), false);
+        TextView tv = cText("\"" + a.label + "\"\nCommand: " + a.cmd + "\n\n" + body, 11.5f, cSub(), false);
         tv.setTextIsSelectable(true);
         ScrollView sv = new ScrollView(this);
         sv.setBackground(cShape(conDark() ? 0xFF0F1524 : 0xFFF2F4F8, 0, 0, 6));
@@ -6245,7 +6442,7 @@ public class MainActivity extends Activity {
 
     /** HTTP 动作（v1.19.7 真接）:后台线程发请求（method/headers/body）,结果弹窗展示。 */
     private void conRunHttpAction(final ConsoleTheme.Act a) {
-        conToast("正在请求...");
+        conToast("Sending request...");
         new Thread(new Runnable() { @Override public void run() {
             final StringBuilder sb = new StringBuilder();
             HttpURLConnection c = null;
@@ -6291,15 +6488,15 @@ public class MainActivity extends Activity {
             if (a.pkg != null && a.pkg.length() > 0) i.setPackage(a.pkg);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
-            conToast("已发出 Intent");
+            conToast("Intent sent");
         } catch (Throwable t) {
-            conToast("Intent 发不出去：" + t.getMessage());
+            conToast("Could not send intent: " + t.getMessage());
         }
     }
 
     /** prompt 动作（v1.19.7 真接）:走引擎 RPC 把提示词真的发给 AI（会话省略 = 新建）。 */
     private void conRunPromptAction(final ConsoleTheme.Act a) {
-        conToast("正在发给 AI...");
+        conToast("Sending to AI...");
         new Thread(new Runnable() { @Override public void run() {
             final String result = conPromptViaRpc(a);
             ui.post(new Runnable() { @Override public void run() { conShowActionResult(a, result); } });
@@ -6548,7 +6745,7 @@ public class MainActivity extends Activity {
             return tv;
         }
         if ("button".equals(ty)) {
-            Button b = cButton(n.text == null || n.text.length() == 0 ? "按钮" : n.text,
+            Button b = cButton(n.text == null || n.text.length() == 0 ? "Action" : n.text,
                     "primary".equals(n.style));
             if (n.action != null) {
                 final ConsoleTheme.Act a = n.action;
@@ -6698,7 +6895,7 @@ public class MainActivity extends Activity {
 
     /** 退化成"打开这一页"的积木（perm.list / plugin.list）。 */
     private View conOpenPageButton(String title, final int page) {
-        Button b = cButton(title + "（打开这一页）›", false);
+        Button b = cButton(title + " (open page) ›", false);
         b.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { consolePage = page; renderConsole(); }
         });
@@ -6892,14 +7089,14 @@ public class MainActivity extends Activity {
     private View conLogPreviewView() {
         try {
             File f = conLogFile();
-            if (!f.exists()) return cText("还没有日志（引擎没启动过）", 11f, cSub(), false);
+            if (!f.exists()) return cText("No logs yet (the engine has not started)", 11f, cSub(), false);
             String tail = conTailOf(f, 8);
             TextView tv = cText(tail, 10.5f, cSub(), false);
             tv.setTypeface(android.graphics.Typeface.MONOSPACE);
             tv.setTextIsSelectable(true);
             return tv;
         } catch (Throwable t) {
-            return cText("读日志失败：" + t.getMessage(), 11f, cSub(), false);
+            return cText("Could not read logs: " + t.getMessage(), 11f, cSub(), false);
         }
     }
 
@@ -6992,7 +7189,7 @@ public class MainActivity extends Activity {
             @Override public void onClick(View v) { conToast("正在检查..."); checkForUpdate(true); }
         });
         upd.addView(updLink, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        upd.addView(cText("当前 " + conVersionLabel(), 11f, cSub(), false));
+        upd.addView(cText("Current " + conVersionLabel(), 11f, cSub(), false));
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(0, cGap(16), 0, 0);
@@ -7202,10 +7399,10 @@ public class MainActivity extends Activity {
         ConsoleTheme ct = conTheme;
         if (ct != null && !ct.execActions.isEmpty()) {
             col.addView(cGrpTitle(t("title.themeActions", "可执行动作（本版不会执行）")), cTop(cGap(20)));
-            col.addView(cText("这份配置里有 " + ct.execActions.size()
-                    + " 个可执行动作（shell / http / intent / prompt）。"
-                    + "它们在主控台的「自定义按钮」卡片里可以点，「点的时候会先弹确认」、"
-                    + "把要执行的命令/网址/提示词原样摆出来;http / intent / prompt 三类本版还没接执行。",
+                col.addView(cText("This config contains " + ct.execActions.size()
+                    + " executable actions (shell / http / intent / prompt). "
+                    + "They appear in the Custom actions section and require confirmation before showing the command, URL, or prompt. "
+                    + "HTTP, intent, and prompt actions are not yet executable in this version.",
                     11f, cRed(), false), cTop(cGap(7)));
             for (int i = 0; i < ct.execActions.size(); i++) {
                 col.addView(cText("· " + ct.execActions.get(i), 11f, cSub(), false), cTop(cGap(4)));
@@ -7254,9 +7451,9 @@ public class MainActivity extends Activity {
         String ts = null;
         int dash = n.indexOf('-');
         if (dash > 0 && n.length() >= dash + 12) ts = n.substring(dash + 1, dash + 12);
-        String kind = n.startsWith("console.json.disabled-") ? "恢复默认时收起的"
-                : n.startsWith("console.json.replaced-") ? "被新配置替换的"
-                : "上次生效时的备份";
+        String kind = n.startsWith("console.json.disabled-") ? "Saved when defaults were restored"
+            : n.startsWith("console.json.replaced-") ? "Replaced by a newer config"
+            : "Previous active config backup";
         String when = ts != null && ts.length() == 11
                 ? ("20" + ts.substring(0, 2) + "-" + ts.substring(2, 4) + "-" + ts.substring(4, 6)
                    + " " + ts.substring(6, 8) + ":" + ts.substring(8, 10) + ":" + ts.substring(10, 11))
@@ -7265,7 +7462,7 @@ public class MainActivity extends Activity {
         String head = readTextFile(f, 4096);
         if (head != null) {
             String nm = jsonField(head, "name");
-            if (nm != null && nm.length() > 0) name = "「" + nm + "」 ";
+            if (nm != null && nm.length() > 0) name = "\"" + nm + "\" ";
         }
         return name + kind + " · " + when + " · " + (f.length() / 1024) + " KB";
     }
@@ -7278,11 +7475,11 @@ public class MainActivity extends Activity {
      */
     private void conThemeShowBackups() {
         final java.util.List<File> list = conThemeBackups();
-        if (list.isEmpty()) { conToast("没有可恢复的配置（你还没「恢复默认」过）"); return; }
+        if (list.isEmpty()) { conToast("No saved configs to restore (defaults have not been restored yet)"); return; }
 
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.addView(cText("点任意一条右边的「恢复」就换回那份配置 -- 换之前会把现在这份也留一份底，随时能换回来。",
+        box.addView(cText("Tap Restore beside a config to use it. The current config is backed up first, so you can switch back later.",
                 11f, cSub(), false));
 
         final int shown = Math.min(list.size(), 30);
@@ -7292,7 +7489,7 @@ public class MainActivity extends Activity {
             inner.addView(conThemeBackupRow(list.get(i)), cTop(cGap(8)));
         }
         if (list.size() > shown) {
-            inner.addView(cText("...另外 " + (list.size() - shown) + " 份未列出（先「清空记录」再进来看）",
+            inner.addView(cText("...and " + (list.size() - shown) + " more (clear saved entries to see them)",
                     10.5f, cSub(), false), cTop(cGap(8)));
         }
         android.widget.ScrollView sc = new android.widget.ScrollView(this);
@@ -7303,12 +7500,12 @@ public class MainActivity extends Activity {
         sc.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(h)));
         box.addView(sc, cTop(cGap(10)));
         box.addView(cText("共 " + list.size() + " 份 · " + conThemeBackupsSizeText(list)
-                        + "\n「清空记录」只删这些备份文件，不动当前正在用的 console.json。",
+                        + "\nClear saved entries deletes only these backups, not the active console.json.",
                 10.5f, cSub(), false), cTop(cGap(10)));
 
-        conDialogView("我保存过的主题（" + list.size() + ")", box, "清空记录", new Runnable() {
+        conDialogView("Saved themes (" + list.size() + ")", box, "Clear saved entries", new Runnable() {
             @Override public void run() { conThemeClearBackupsConfirm(list); }
-        }, "关闭", true);
+        }, "Close", true);
     }
 
     /** 备份列表里的一行：左边「名称 · 类型 · 时间 · 大小」，右边「恢复」。 */
@@ -7321,7 +7518,7 @@ public class MainActivity extends Activity {
         TextView tv = cText(conThemeBackupLabel(f), 11.5f, cText(), false);
         tv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         row.addView(tv);
-        Button b = cButton("恢复", false);
+        Button b = cButton("Restore", false);
         b.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View x) { conThemeRestoreBackupNow(f); }
         });
@@ -7994,14 +8191,14 @@ public class MainActivity extends Activity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setVisibility(View.GONE);
-        box.addView(cText("布局标记 hoisted-1 · 插件与补丁面已验证", 11f, cSub(), false), cTop(dp(8)));
+        box.addView(cText("Layout hoisted-1 · plugins and patches verified", 11f, cSub(), false), cTop(dp(8)));
         LinearLayout acts = new LinearLayout(this);
         acts.setOrientation(LinearLayout.HORIZONTAL);
-        Button re = cButton("重新解压", false);
+        Button re = cButton("Extract again", false);
         re.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conReExtract(); }
         });
-        Button vf = cButton("校验", false);
+        Button vf = cButton("Verify", false);
         vf.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { conVerifyFiles(); }
         });
@@ -8181,7 +8378,7 @@ public class MainActivity extends Activity {
         // 同样不能只 destroy 句柄 -- 句柄丢了就什么都停不掉，改用 killEngineNow（按 PID）。
         engineStoppedByUser = true;
         engineStartAborted = true;
-        conToast("正在停止引擎...");
+        conToast("Stopping engine...");
         // v1.13.12:停引擎 = 虚拟屏一起销毁（用户确认的行为）。虚拟屏由 AI 经引擎驱动，
         // 引擎停了虚拟屏就是一块没人管的孤儿屏；不一起收掉的话它还挂在屏幕上。
         VsreenBridgeService.requestDestroyVscreen();
@@ -8190,9 +8387,9 @@ public class MainActivity extends Activity {
             starting = false;
             engineStartTs = 0L;
             ui.post(new Runnable() { @Override public void run() {
-                setStatus("引擎已停止");
+                setStatus("Engine stopped");
                 refreshConsole();
-                conToast("引擎已停止");
+                conToast("Engine stopped");
             }});
         }}, "engine-stop").start();
     }
@@ -8301,13 +8498,13 @@ public class MainActivity extends Activity {
     private void conExtractFailed(String msg) {
         extracting = false;
         refreshConsole();
-        conToast("解压失败：" + msg);
+        conToast("Extraction failed: " + msg);
     }
 
     private void conEngineFailed(String msg) {
         starting = false;
         refreshConsole();
-        conToast("引擎启动失败：" + msg);
+        conToast("Engine startup failed: " + msg);
     }
 
     /** 只负责起引擎（文件已就绪）:健康探测 → spawnNode → 等就绪。v1.12 从 startEngine 拆出。 */
@@ -8385,12 +8582,12 @@ public class MainActivity extends Activity {
                     else { n++; bytes += cs[i].length(); }
                 }
             }
-            return String.format(java.util.Locale.US, "%,d 个文件 · %d MB", Long.valueOf(n), Long.valueOf(bytes / 1048576L));
+            return String.format(java.util.Locale.US, "%,d files · %d MB", Long.valueOf(n), Long.valueOf(bytes / 1048576L));
         } catch (Throwable t) { return null; }
     }
 
     private void conVerifyFiles() {
-        conToast("校验中...");
+        conToast("Verifying files...");
         new Thread(new Runnable() { @Override public void run() {
             final String miss = conMissingKey();
             int done = 0;
@@ -8399,9 +8596,9 @@ public class MainActivity extends Activity {
             final int cur = conBuildCode();
             final String s = conComputeFilesSummary();
             ui.post(new Runnable() { @Override public void run() {
-                if (miss != null) conToast("校验失败：缺 " + miss + ",请点「重新解压」");
-                else if (fdone != cur) conToast("校验失败：内部文件是旧版本解压的（记录 " + fdone + " / 当前 " + cur + "),请重新解压");
-                else conToast("校验通过，" + (s == null ? "文件齐全" : s) + " · 已对应当前安装版本");
+                if (miss != null) conToast("Verification failed: missing " + miss + ". Tap Extract again.");
+                else if (fdone != cur) conToast("Verification failed: internal files are from an older extraction (record " + fdone + " / current " + cur + "). Extract again.");
+                else conToast("Verification passed: " + (s == null ? "all files are present" : s) + " · matches this app version");
             }});
         }}, "files-verify").start();
     }
@@ -8465,29 +8662,29 @@ public class MainActivity extends Activity {
 
         col.addView(cGrpTitle(t("title.grpPermBasic", "基本权限")), cTop(cGap(16)));
         LinearLayout c1 = cCardBox();
-        addPermRow(c1, "所有文件访问", "读写 /sdcard,AI 才能碰你的文件", "storage");
-        addPermRow(c1, "通知", "AI 发通知 / 提醒", "notify");
-        addPermRow(c1, "悬浮窗", "黑鲸鱼悬浮窗 / 虚拟屏预览", "overlay");
-        addPermRow(c1, "电池优化", "设为「不限制」，否则切后台引擎会被杀", "battery");
+        addPermRow(c1, "All files access", "Read and write files so AI can work with them", "storage");
+        addPermRow(c1, "Notifications", "AI task notifications and reminders", "notify");
+        addPermRow(c1, "Display over other apps", "Floating status panel and virtual screen preview", "overlay");
+        addPermRow(c1, "Battery optimization", "Set to Unrestricted to keep the engine running in the background", "battery");
         col.addView(c1, cTop(cGap(8)));
 
         col.addView(cGrpTitle(t("title.grpPermPriv", "特权通道（二选一）")), cTop(cGap(18)));
         LinearLayout c2 = cCardBox();
-        addPermRow(c2, "root（超级用户）", "替代 Shizuku 跑特权命令：装应用 / 改设置 / 虚拟屏点击 / 任意 shell", "root");
-        addPermRow(c2, "Shizuku（免 root 特权通道）", "有 root 时用 root;没 root 时装 Shizuku 走同一套能力", "shizuku");
+        addPermRow(c2, "Root (superuser)", "Run privileged commands: install apps, change settings, control virtual screens, and use a shell", "root");
+        addPermRow(c2, "Shizuku (no root required)", "Provides similar capabilities on devices without root access", "shizuku");
         col.addView(c2, cTop(cGap(8)));
 
         col.addView(cGrpTitle(t("title.grpPermMore", "其它")), cTop(cGap(18)));
         LinearLayout c3 = cCardBox();
-        addPermRow(c3, "无障碍服务（读屏 / 点屏）", "android_screen / tap / type / see（不需要 root 或 Shizuku）", "a11y");
-        addPermRow(c3, "安装未知应用", "android_package 装 APK 用", "install");
+        addPermRow(c3, "Accessibility (read and control screen)", "android_screen / tap / type / see (no root or Shizuku required)", "a11y");
+        addPermRow(c3, "Install unknown apps", "Required by android_package to install APKs", "install");
         // issue #30:工作区入口原先只在首启引导完成页，走完引导就再无入口（只能清数据重走引导）。
         // 这里复用同一套 onWorkspaceRowClick(),使权限页也能查看 / 更改 / 恢复默认。
         addWorkspaceRow(c3);
         col.addView(c3, cTop(cGap(8)));
 
-        col.addView(cNote("root 只能由你在 root 管理器（Magisk / KernelSU）里授予本应用；"
-                + "设备没 root 时这一项显示「本机无 root」。"), cTop(cGap(14)));
+        col.addView(cNote("Grant root access to this app in your root manager (Magisk / KernelSU). "
+            + "If the device is not rooted, this permission is unavailable."), cTop(cGap(14)));
         conRefreshRootAsync();
     }
 
@@ -8500,17 +8697,17 @@ public class MainActivity extends Activity {
         final boolean unset = (cur == null || cur.isEmpty());
         // v1.19.6:跟权限行统一 -- 右列短状态（选择 / 更改）+ ›,整行可点。
         // conWorkspaceDesc 这个字段保留：工作区变更后要靠它做局部刷新。
-        conWorkspaceDesc = cText(unset ? "未设置（AI 文件操作在内部目录）" : cur, 11f, cSub(), false);
+        conWorkspaceDesc = cText(unset ? "Not set (AI files use the internal folder)" : cur, 11f, cSub(), false);
         LinearLayout left = new LinearLayout(this);
         left.setOrientation(LinearLayout.VERTICAL);
-        left.addView(cText("AI 工作区（可选）", 13.5f, cText(), false));
+        left.addView(cText("AI workspace (optional)", 13.5f, cText(), false));
         left.addView(conWorkspaceDesc);
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(0, dp(12), 0, dp(12));
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        row.addView(cText(unset ? "选择" : "更改", 11.5f, cAccent(), false));
+        row.addView(cText(unset ? "Choose" : "Change", 11.5f, cAccent(), false));
         LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         clp.leftMargin = dp(6);
@@ -9723,7 +9920,7 @@ public class MainActivity extends Activity {
             int done = conSelfCheckProgress[0], total = conSelfCheckProgress[1];
             double frac = total > 0 ? Math.min(1.0, done / (double) total) : 0.0;
             long secs = (System.currentTimeMillis() - conSelfCheckStart) / 1000;
-            col.addView(cText("自检进行中 · " + (conSelfCheckPhase == null ? "" : conSelfCheckPhase),
+            col.addView(cText("Self-check in progress · " + (conSelfCheckPhase == null ? "" : conSelfCheckPhase),
                     12.5f, cText(), true), cTop(cGap(12)));
             // 内联自绘进度条（既有那条权重条是「解压卡」的全局单例，不能复用）
             LinearLayout track = new LinearLayout(this);
@@ -9738,19 +9935,19 @@ public class MainActivity extends Activity {
             track.addView(fill, flp);
             track.addView(rest, rlp);
             col.addView(track, cTop(cGap(8)));
-            String line = total > 0
-                    ? ("已处理 " + done + " / " + total + " 个文件（" + Math.round(frac * 100) + "%)")
-                    : ("已处理 " + done + " 个文件（总数读取中...）");
-            col.addView(cText(line + " · 已用 " + secs + "s", 11f, cSub(), false), cTop(cGap(6)));
-            Button cancel = cButton("取消", false);
+                String line = total > 0
+                    ? ("Processed " + done + " / " + total + " files (" + Math.round(frac * 100) + "%)")
+                    : ("Processed " + done + " files (loading total...)");
+                col.addView(cText(line + " · " + secs + "s elapsed", 11f, cSub(), false), cTop(cGap(6)));
+                Button cancel = cButton("Cancel", false);
             cancel.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View x) { conSelfCheckCancel = true; conToast("正在停止..."); }
+                @Override public void onClick(View x) { conSelfCheckCancel = true; conToast("Stopping..."); }
             });
             col.addView(cancel, cTop(cGap(10)));
             return;
         }
         if (r == null) {
-            col.addView(cText("还没有跑过自检。建议先点「快速自检」（只比大小，秒级）。",
+            col.addView(cText("No self-check has run yet. Start with Quick check; it compares file sizes and takes only a few seconds.",
                     12f, cText(), false), cTop(cGap(12)));
         } else {
             // v1.19.6:结论放最上面（大字 + 绿/红）,数字一行带过，"下一步"紧跟其后
@@ -9758,9 +9955,9 @@ public class MainActivity extends Activity {
             LinearLayout c0 = cCardBox();
             c0.addView(cText(uiPlain(r.verdict.toUpperCase() + " · " + r.headline), 15f, color, true),
                     cTop(cGap(12)));
-            c0.addView(cText("清单文件 " + r.manifestFiles + " · 树上文件 " + r.treeFiles
-                    + " · 已校验内容 " + r.hashed + " · 用时 " + (r.elapsedMs / 1000) + "s"
-                    + (r.quick ? "（快速：只比大小）" : "（全量：大小 + sha256）"),
+                c0.addView(cText("Manifest files " + r.manifestFiles + " · Files on device " + r.treeFiles
+                    + " · Content verified " + r.hashed + " · Time " + (r.elapsedMs / 1000) + "s"
+                    + (r.quick ? " (quick: sizes only)" : " (full: size + SHA-256)"),
                     11f, cSub(), false), cTop(cGap(6)));
             if (!r.samples.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
@@ -9768,7 +9965,7 @@ public class MainActivity extends Activity {
                 c0.addView(cText(uiPlain(sb.toString().trim()), 11f, cText(), false), cTop(cGap(8)));
             }
             if (!r.nextSteps.isEmpty()) {
-                StringBuilder sb = new StringBuilder("下一步：\n");
+                StringBuilder sb = new StringBuilder("Next steps:\n");
                 for (int i = 0; i < r.nextSteps.size(); i++) sb.append(i + 1).append(". ").append(r.nextSteps.get(i)).append("\n");
                 c0.addView(cText(uiPlain(sb.toString().trim()), 11f, cSub(), false), cTop(cGap(8)));
             }
@@ -9838,7 +10035,7 @@ public class MainActivity extends Activity {
     private void conAdminLoad() {
         if (conAdminBusy) return;
         conAdminBusy = true;
-        conToast("正在读取会话列表...（只读）");
+        conToast("Reading sessions... (read-only)");
         renderConsole();
         final File payload = payloadDir();
         final File dshHome = new File(payload, "dshhome");
@@ -9868,7 +10065,7 @@ public class MainActivity extends Activity {
         if (lastOp != null) col.addView(lastOp, cTop(cGap(14)));
 
         if (conAdminBusy) {
-            col.addView(cText("正在读取...（只读，不改任何东西）", 12f, cText(), true), cTop(cGap(12)));
+            col.addView(cText("Reading sessions... (read-only; no changes will be made)", 12f, cText(), true), cTop(cGap(12)));
             return;
         }
         SessionAdmin.ListResult r = conAdminList;
@@ -9970,7 +10167,7 @@ public class MainActivity extends Activity {
         if (lastOp != null) col.addView(lastOp, cTop(cGap(14)));
 
         if (conAdminBusy) {
-            col.addView(cText("正在读取...（只读）", 12f, cText(), true), cTop(cGap(12)));
+            col.addView(cText("Reading trash... (read-only)", 12f, cText(), true), cTop(cGap(12)));
             return;
         }
         SessionAdmin.TrashResult t = conAdminTrash;
@@ -10192,7 +10389,7 @@ public class MainActivity extends Activity {
         if (conSessionScanning || conSessionHealingId != null) return;
         conSessionScanning = true;
         conSessionLastHeal = null;
-        conToast("正在扫描会话（只读，不改任何东西）...");
+        conToast("Scanning sessions... (read-only; no changes will be made)");
         renderConsole();
         final File payload = payloadDir();
         final File dshHome = new File(payload, "dshhome");
@@ -10224,7 +10421,7 @@ public class MainActivity extends Activity {
             boolean good = last.ok && last.applied;
             String sub = cCut(last.headline(), 90)
                     + (last.backup != null && last.backup.length() > 0
-                        ? (";原文件已备份到同目录 " + new File(last.backup).getName()) : "");
+                        ? ("; original backed up as " + new File(last.backup).getName()) : "");
             LinearLayout lb = cCardBox();
             lb.addView(cCardRow(t("status.lastHeal", "上次修复"), sub,
                     good ? t("status.done", "完成")
@@ -10234,11 +10431,11 @@ public class MainActivity extends Activity {
         }
 
         if (conSessionHealingId != null) {
-            col.addView(cText("正在修复...（先备份，再只降级坏引用，最后复检）", 12f, cText(), true), cTop(cGap(12)));
+            col.addView(cText("Repairing... (backing up, replacing only broken references, then verifying)", 12f, cText(), true), cTop(cGap(12)));
             return;
         }
         if (conSessionScanning) {
-            col.addView(cText("正在扫描会话...（只读）", 12f, cText(), true), cTop(cGap(12)));
+            col.addView(cText("Scanning sessions... (read-only)", 12f, cText(), true), cTop(cGap(12)));
             return;
         }
 
@@ -10276,8 +10473,8 @@ public class MainActivity extends Activity {
             }
             int normal = r.sessionCount - r.badSessionCount;
             if (normal > 0) {
-                col.addView(cNote("另有 " + normal + " " + t("desc.sessionNormalOther",
-                        "条会话没有发现问题（未在下面列出）。")), cTop(cGap(10)));
+                col.addView(cNote(normal + " " + t("desc.sessionNormalOther",
+                    "other sessions have no detected issues and are not listed.")), cTop(cGap(10)));
             }
         }
 

@@ -166,15 +166,15 @@ public class OverlayService extends Service {
         return ACTION_TYPES.clone();
     }
 
-    /** 动作的中文名（控制台「悬浮球」页与选择框用）。 */
+    /** User-facing action names used by the console and chooser. */
     public static String actionLabel(String type) {
-        if (ACTION_PANEL.equals(type)) return "状态面板";
-        if (ACTION_OPEN_APP.equals(type)) return "打开应用";
-        if (ACTION_VSCREEN_CREATE.equals(type)) return "创建虚拟屏";
-        if (ACTION_VSCREEN_CLOSE.equals(type)) return "销毁虚拟屏";
-        if (ACTION_COLLAPSE.equals(type)) return "收起悬浮球";
-        if (ACTION_NONE.equals(type)) return "无动作";
-        return "无动作";
+        if (ACTION_PANEL.equals(type)) return "Status panel";
+        if (ACTION_OPEN_APP.equals(type)) return "Open app";
+        if (ACTION_VSCREEN_CREATE.equals(type)) return "Create virtual screen";
+        if (ACTION_VSCREEN_CLOSE.equals(type)) return "Destroy virtual screen";
+        if (ACTION_COLLAPSE.equals(type)) return "Collapse floating panel";
+        if (ACTION_NONE.equals(type)) return "No action";
+        return "No action";
     }
 
     /** 该动作是否需要再选一个应用（open_app 必选 / vscreen_create 可空）。 */
@@ -372,14 +372,14 @@ public class OverlayService extends Service {
         panelView.setBackground(pbg);
 
         statusText = new TextView(this);
-        statusText.setText("状态：检测中…");
+        statusText.setText("Status: checking...");
         statusText.setTextColor(getColor(R.color.panel_text_bright));
         statusText.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_caption));
         panelView.addView(statusText);
 
         // AI 会话状态（/proc 会话写入器扫描，每 ~6 秒刷新；v1.13.12 起不再是永远"空闲"）
         aiText = new TextView(this);
-        aiText.setText("AI：—");
+        aiText.setText("AI: —");
         aiText.setTextColor(getColor(R.color.panel_text_dim));
         aiText.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_caption));
         panelView.addView(aiText);
@@ -402,13 +402,13 @@ public class OverlayService extends Service {
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         r1p.topMargin = dp(7);
         btnRow1.setLayoutParams(r1p);
-        btnRow1.addView(pillButton("打开应用", new Runnable() { @Override public void run() {
+        btnRow1.addView(pillButton("Open app", new Runnable() { @Override public void run() {
             Intent i = new Intent(OverlayService.this, MainActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             try { startActivity(i); } catch (Throwable ignored) {}
             setPanelVisible(false, true);
         }}));
-        btnRow1.addView(pillButton("虚拟屏", new Runnable() { @Override public void run() {
+        btnRow1.addView(pillButton("Virtual screen", new Runnable() { @Override public void run() {
             // 预览窗被「收起到小鲸鱼」后的回程入口；没有虚拟屏时桥服务会静默忽略
             try { VsreenBridgeService.showPreviewFromWhale(); } catch (Throwable ignored) {}
             setPanelVisible(false, true);
@@ -421,13 +421,13 @@ public class OverlayService extends Service {
         r2p.topMargin = dp(5);
         btnRow2.setLayoutParams(r2p);
         // 销毁屏：替代旧预览窗上的 ✕（用户要求销毁功能收进小鲸鱼面板）
-        destroyBtn = pillButton("销毁屏", new Runnable() { @Override public void run() {
+        destroyBtn = pillButton("Destroy screen", new Runnable() { @Override public void run() {
             try { VsreenBridgeService.destroyVscreenFromWhale(); } catch (Throwable ignored) {}
             setPanelVisible(false, true);
         }});
         destroyBtn.setVisibility(View.GONE);
         btnRow2.addView(destroyBtn);
-        btnRow2.addView(pillButton("收起", new Runnable() { @Override public void run() {
+        btnRow2.addView(pillButton("Collapse", new Runnable() { @Override public void run() {
             setPanelVisible(false, true);
         }}));
 
@@ -553,7 +553,7 @@ public class OverlayService extends Service {
                 VsreenBridgeService.createVscreenForPackage(pkg == null ? "" : pkg.trim());
             }
         } catch (Throwable t) {
-            toastOverlay("动作执行失败：" + t.getMessage());
+            toastOverlay("Action failed: " + t.getMessage());
         }
     }
 
@@ -561,19 +561,19 @@ public class OverlayService extends Service {
     private void openAppFromOverlay(String pkg) {
         String p = pkg == null ? "" : pkg.trim();
         if (p.length() == 0) {
-            toastOverlay("未配置应用");
+            toastOverlay("No app configured");
             return;
         }
         try {
             Intent i = getPackageManager().getLaunchIntentForPackage(p);
             if (i == null) {
-                toastOverlay("未找到应用");
+                toastOverlay("App not found");
                 return;
             }
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
         } catch (Throwable t) {
-            toastOverlay("未找到应用");
+            toastOverlay("App not found");
         }
     }
 
@@ -1014,7 +1014,7 @@ public class OverlayService extends Service {
         }
         try {
             android.widget.Toast.makeText(getApplicationContext(),
-                    "小鲸鱼已隐藏，可从通知栏「显示小鲸鱼」恢复", android.widget.Toast.LENGTH_LONG).show();
+                    "Floating panel hidden. Use Show floating panel in the notification to restore it.", android.widget.Toast.LENGTH_LONG).show();
         } catch (Throwable ignored) {}
     }
 
@@ -1129,7 +1129,7 @@ public class OverlayService extends Service {
     /** 更新悬浮窗状态文字 + 常驻通知（在主线程调用）。 */
     private void updateEngineStatusUi() {
         if (statusText != null) {
-            statusText.setText("状态：" + (engineUp ? "引擎运行中 ✓" : "引擎未运行"));
+            statusText.setText("Status: " + (engineUp ? "Engine running ✓" : "Engine stopped"));
         }
         if (aiText != null) {
             aiText.setText(aiStatusText());
@@ -1150,24 +1150,24 @@ public class OverlayService extends Service {
      *  - 其余 → "空闲"。引擎不在跑时显示"—"。
      */
     private String aiStatusText() {
-        if (!engineUp) return "AI：—";
+        if (!engineUp) return "AI: —";
         HashSet<String> cur = activeSessions;
-        if (cur == null) return "AI：—";       // 还没扫过 / /proc 扫不了
+        if (cur == null) return "AI: —";       // 还没扫过 / /proc 扫不了
         int n = cur.size();
         long now = System.currentTimeMillis();
         if (n > 0) {
             lastSessionsHadWork = true;   // 边沿触发源：从"有会话工作"变"没有"时报已完成
             finishedAt = 0L;
-            return n == 1 ? "AI：1 个会话工作中…" : "AI：" + n + " 个会话工作中…";
+            return n == 1 ? "AI: 1 session active..." : "AI: " + n + " sessions active...";
         }
         if (finishedAt == 0L && lastSessionsHadWork) {
             finishedAt = now;
         }
         if (finishedAt > 0L && now - finishedAt < FINISHED_TTL_MS) {
-            return "AI：会话已完成 ✓";
+            return "AI: Session complete ✓";
         }
         lastSessionsHadWork = false;
-        return "AI：空闲";
+        return "AI: Idle";
     }
     /** 上次扫描是否看到过工作中的会话（用于"已完成"的边沿触发）。 */
     private volatile boolean lastSessionsHadWork = false;

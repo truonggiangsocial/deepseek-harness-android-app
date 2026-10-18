@@ -40,6 +40,18 @@ sh build.sh
 # 产物：android-app/DeepSeekHarness.apk
 ```
 
+## GitHub Actions
+
+`.github/workflows/build-apk.yml` 会在 `main` 分支的 APK 相关文件变更时构建，也可从 Actions 页面手动运行。构建使用 GitHub 托管的 Ubuntu runner；仓库不包含约 118 MB 的开发环境，因此需在仓库 **Settings → Secrets and variables → Actions** 配置：
+
+- `DSH_DEV_HOME_URL`：可信 HTTPS 地址，直接返回 `.tar.gz` 开发环境归档。归档根目录应直接包含 `runtime/`、`dshroot/`、`.dsh/` 和 `rish/`，不要再套一层目录；至少提供 `.dsh` 下构建所需的配置文件。不得包含 API 凭证或 `.credentials.yaml`。
+- `DSH_DEV_HOME_TOKEN`：可选的 Bearer token；公开或预签名下载地址可不设置。
+- `ANDROID_KEYSTORE_BASE64`：`release.jks` 的单行 Base64 内容。
+- `KEYSTORE_PASS`：签名密钥口令。
+- `KEYSTORE_ALIAS`：可选；未设置时默认为 `dsh`。
+
+构建成功后，在该次 workflow run 的 **Artifacts** 中下载 `DeepSeekHarness-<run number>`。APK 有效期为 14 天；签名密钥只在 runner 临时写入，且不会作为 artifact 上传。
+
 ## build.sh 关键点
 
 - **第 0 步**自动注入移动端适配（`sh ../mobile-patch/inject.sh`），payload 随 APK 打包

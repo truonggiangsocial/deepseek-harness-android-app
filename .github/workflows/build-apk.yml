@@ -1,0 +1,134 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "android-app/**"
+      - "mobile-patch/**"
+      - "console-theme/**"
+      - "tools/manifest-gen.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DSH_DEV_HOME_URL: ${{ secrets.DSH_DEV_HOME_URL }}
+      DSH_DEV_HOME_TOKEN: ${{ secrets.DSH_DEV_HOME_TOKEN }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform and build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platforms;android-28" "build-tools;35.0.0"
+          sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:?Android SDK path is not set}}"
+          build_tools="$sdk_root/build-tools/35.0.0"
+          test -x "$build_tools/aapt"
+          test -x "$build_tools/d8"
+          test -x "$build_tools/zipalign"
+          test -x "$build_tools/apksigner"
+          echo "$build_tools" >> "$GITHUB_PATH"
+          echo "ANDROID_BUILD_TOOLS=$build_tools" >> "$GITHUB_ENV"
+          echo "ANDROID_JAR=$sdk_root/platforms/android-28/android.jar" >> "$GITHUB_ENV"
+
+      - name: Download private DSH build environment
+        shell: bash
+        env:
+          DSH_DEV_HOME_URL: ${{ secrets.DSH_DEV_HOME_URL }}
+          DSH_DEV_HOME_TOKEN: ${{ secrets.DSH_DEV_HOME_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$DSH_DEV_HOME_URL" ]]; then
+            echo "Missing repository secret DSH_DEV_HOME_URL (URL to a trusted .tar.gz build environment)." >&2
+            exit 1
+          fi
+
+          archive="$RUNNER_TEMP/dsh-devhome.tar.gz"
+          devhome="$RUNNER_TEMP/dsh-devhome"
+          mkdir -p "$devhome"
+          curl_args=(--fail --location --retry 3 --silent --show-error)
+          if [[ -n "$DSH_DEV_HOME_TOKEN" ]]; then
+            curl_args+=(--header "Authorization: Bearer $DSH_DEV_HOME_TOKEN")
+          fi
+          curl "${curl_args[@]}" "$DSH_DEV_HOME_URL" --output "$archive"
+          tar -xzf "$archive" -C "$devhome"
+
+          required=(
+            "runtime/bin/node"
+            "runtime/lib"
+            "dshroot/lib/node_modules/@deepseek-ai/dsh/package.json"
+            "dshroot/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-web-frontend/dist/index.html"
+            "rish/rish_shizuku.dex"
+            ".dsh/cordis.patch.yml"
+            ".dsh/profiles/web/cordis.patch.yml"
+            ".dsh/profiles/web/cordis.yml"
+            ".dsh/profiles/web/package.json"
+            ".dsh/profiles/web/pnpm-workspace.yaml"
+          )
+          for path in "${required[@]}"; do
+            if [[ ! -e "$devhome/$path" ]]; then
+              echo "Build environment is missing: $path" >&2
+              exit 1
+            fi
+          done
+          if [[ ! -f "$devhome/.dsh/settings.yaml" && ! -f "$devhome/.dsh/settings.yaml.imported" ]]; then
+            echo "Build environment is missing .dsh/settings.yaml (or settings.yaml.imported)." >&2
+            exit 1
+          fi
+          mkdir -p "$devhome/build"
+          {
+            echo "export PATH=\"\$ANDROID_BUILD_TOOLS:\$JAVA_HOME/bin:\$PATH\""
+          } > "$devhome/build/env.sh"
+          echo "DSH_DEV_HOME=$devhome" >> "$GITHUB_ENV"
+          echo "JAVA_BIN=$JAVA_HOME/bin" >> "$GITHUB_ENV"
+          echo "JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8" >> "$GITHUB_ENV"
+
+      - name: Build and sign APK
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" || -z "$KEYSTORE_PASS" ]]; then
+            echo "Missing repository secrets ANDROID_KEYSTORE_BASE64 or KEYSTORE_PASS." >&2
+            exit 1
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android-app/release.jks
+          trap 'rm -f android-app/release.jks' EXIT
+          (cd android-app && bash build.sh)
+          test -s android-app/DeepSeekHarness.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepSeekHarness-${{ github.run_number }}
+          path: android-app/DeepSeekHarness.apk
+          if-no-files-found: error
+          retention-days: 14

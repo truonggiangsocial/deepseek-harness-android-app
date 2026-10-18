@@ -308,7 +308,7 @@ public class MainActivity extends Activity {
         checkWebViewCompat();
 
         statusView = new TextView(this);
-        statusView.setText("正在启动 DeepSeek Harness…");
+        statusView.setText("Starting DeepSeek Harness…");
         statusView.setTextColor(cSub());
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.text_body));
         statusView.setGravity(Gravity.CENTER);
@@ -973,8 +973,8 @@ public class MainActivity extends Activity {
         guidePages.clear();
 
         GuidePage p1 = new GuidePage();
-        p1.title = "存储权限"; p1.actionLabel = "去授权";
-        p1.desc = "读写手机上的文件：导入/导出内容、把 AI 生成的文件存到手机、写日志与运行数据。\n\n不给的话，AI 无法保存任何文件。";
+        p1.title = "Storage access"; p1.actionLabel = "Grant access";
+        p1.desc = "Read and write files on your phone, including imports, exports, AI-generated files, logs, and runtime data.\n\nWithout this permission, AI cannot save files.";
         p1.provider = new StatusProvider() { @Override public boolean granted() {
             return checkSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED
                     && checkSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED;
@@ -987,8 +987,8 @@ public class MainActivity extends Activity {
         guidePages.add(p1);
 
         GuidePage p2 = new GuidePage();
-        p2.title = "所有文件访问"; p2.actionLabel = "去授权";
-        p2.desc = "访问手机上所有文件（Android 11 及以上需要单独授权，11 以下由存储权限覆盖）。\n\nAI 读写你的项目文件、整理文档都靠它。";
+        p2.title = "All files access"; p2.actionLabel = "Grant access";
+        p2.desc = "Access all files on your phone. Android 11 and later require separate approval; older versions use storage permission.\n\nThis lets AI read and organize your project files.";
         p2.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT >= 30) {
                 return Environment.isExternalStorageManager();
@@ -1018,8 +1018,8 @@ public class MainActivity extends Activity {
         guidePages.add(p2);
 
         GuidePage p3 = new GuidePage();
-        p3.title = "悬浮窗"; p3.actionLabel = "去授权";
-        p3.desc = "在其它应用之上显示内容：桌面小鲸鱼状态窗、虚拟屏预览窗都靠它。\n\n不给的话没有小鲸鱼，也看不到虚拟屏画面。";
+        p3.title = "Display over other apps"; p3.actionLabel = "Grant access";
+        p3.desc = "Show content over other apps, including the floating status panel and virtual screen preview.\n\nWithout this permission, these floating windows are unavailable.";
         p3.provider = new StatusProvider() { @Override public boolean granted() {
             return Settings.canDrawOverlays(MainActivity.this);
         }};
@@ -1029,8 +1029,8 @@ public class MainActivity extends Activity {
         guidePages.add(p3);
 
         GuidePage p4 = new GuidePage();
-        p4.title = "修改系统设置"; p4.actionLabel = "去授权";
-        p4.desc = "允许读写系统设置，比如调亮度、音量、保持屏幕常亮。\n\nAI 帮你改设置时需要；不给只是这类操作不可用。";
+        p4.title = "Modify system settings"; p4.actionLabel = "Grant access";
+        p4.desc = "Allow changes to system settings such as brightness, volume, and keeping the screen on.\n\nAI needs this only when you ask it to change these settings.";
         p4.provider = new StatusProvider() { @Override public boolean granted() {
             return Settings.System.canWrite(MainActivity.this);
         }};
@@ -1040,8 +1040,8 @@ public class MainActivity extends Activity {
         guidePages.add(p4);
 
         GuidePage p5 = new GuidePage();
-        p5.title = "使用情况访问"; p5.actionLabel = "去授权";
-        p5.desc = "查看应用使用时长与统计信息，AI 才能回答\"我今天用了多久微信\"这类问题。\n\n不给的话应用使用统计相关功能不可用。";
+        p5.title = "Usage access"; p5.actionLabel = "Grant access";
+        p5.desc = "View app usage duration and statistics, so AI can answer questions about how long you used an app.\n\nUsage-statistics features are unavailable without this permission.";
         p5.provider = new StatusProvider() { @Override public boolean granted() {
             AppOpsManager ops = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
             int mode = ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
@@ -1053,8 +1053,8 @@ public class MainActivity extends Activity {
         guidePages.add(p5);
 
         GuidePage p6 = new GuidePage();
-        p6.title = "安装未知来源应用"; p6.actionLabel = "去授权";
-        p6.desc = "允许安装 APK：侧载应用、AI 帮你下载并安装应用时需要。\n\n不给的话 AI 无法替你安装应用。";
+        p6.title = "Install unknown apps"; p6.actionLabel = "Grant access";
+        p6.desc = "Allow APK installation. This is needed to sideload apps or let AI download and install an app for you.\n\nAI cannot install apps without this permission.";
         p6.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT < 26) return true;
             return getPackageManager().canRequestPackageInstalls();
@@ -1065,8 +1065,8 @@ public class MainActivity extends Activity {
         guidePages.add(p6);
 
         GuidePage p7 = new GuidePage();
-        p7.title = "忽略电池优化"; p7.actionLabel = "去授权";
-        p7.desc = "让本应用在后台常驻、不被系统提前杀掉 —— 引擎要一直在跑，这是稳定在线的前提。\n\n强烈建议授权；不给的话切后台后引擎可能被杀。";
+        p7.title = "Ignore battery optimizations"; p7.actionLabel = "Grant access";
+        p7.desc = "Keep the app running in the background. The engine must stay active to remain available.\n\nRecommended: without this permission, the system may stop the engine when the app is in the background.";
         p7.provider = new StatusProvider() { @Override public boolean granted() {
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
             return pm.isIgnoringBatteryOptimizations(getPackageName());
@@ -1077,8 +1077,8 @@ public class MainActivity extends Activity {
         guidePages.add(p7);
 
         GuidePage p8 = new GuidePage();
-        p8.title = "通知权限"; p8.actionLabel = "去授权";
-        p8.desc = "接收 AI 完成任务等通知，人不在应用里也能知道任务跑完了。\n\n不给的话收不到这些提醒（其它功能不受影响）。";
+        p8.title = "Notifications"; p8.actionLabel = "Grant access";
+        p8.desc = "Get notified when AI finishes a task, even when you are away from the app.\n\nOther features continue to work without this permission.";
         p8.provider = new StatusProvider() { @Override public boolean granted() {
             if (Build.VERSION.SDK_INT < 33) return true;
             return checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED;
@@ -1103,8 +1103,8 @@ public class MainActivity extends Activity {
         guidePages.add(p8);
 
         GuidePage p9 = new GuidePage();
-        p9.title = "Shizuku / Root 特权（可选）"; p9.actionLabel = "去配置";
-        p9.desc = "授权后 AI 可以执行系统级操作：安装/卸载应用、改系统设置、模拟点击等。\n\n不给也完全能用 —— 文件读写、预览、编辑只需要上面的「所有文件访问」。";
+        p9.title = "Shizuku / root access (optional)"; p9.actionLabel = "Configure";
+        p9.desc = "Allows AI to perform system-level actions such as installing apps, changing settings, and simulating taps.\n\nThe app also works without it. File access, preview, and editing only require All files access.";
         p9.provider = new StatusProvider() { @Override public boolean granted() {
             // 只读缓存：root 探测在后台线程执行（probeShizuku），不在主线程跑 su
             return (shizukuOk != null && shizukuOk) || (rootOk != null && rootOk);
@@ -1132,7 +1132,7 @@ public class MainActivity extends Activity {
         guideDots.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         head.addView(guideDots);
         TextView headTitle = new TextView(this);
-        headTitle.setText("首次使用 · 配置手机权限");
+        headTitle.setText("Welcome · Set up permissions");
         headTitle.setTextColor(cText());
         headTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         headTitle.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -1158,7 +1158,7 @@ public class MainActivity extends Activity {
         nav.setPadding(dp(20), dp(10), dp(20), dp(16));
 
         guideSkipBtn = new TextView(this);
-        guideSkipBtn.setText("跳过");
+        guideSkipBtn.setText("Skip");
         guideSkipBtn.setTextColor(cSub());
         guideSkipBtn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         guideSkipBtn.setPadding(dp(6), dp(10), dp(6), dp(10));
@@ -1167,7 +1167,7 @@ public class MainActivity extends Activity {
         }});
         nav.addView(guideSkipBtn);
 
-        guidePrevBtn = cButton("上一步", false);
+        guidePrevBtn = cButton("Back", false);
         LinearLayout.LayoutParams prevLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         prevLp.leftMargin = dp(8);
         guidePrevBtn.setLayoutParams(prevLp);
@@ -1176,7 +1176,7 @@ public class MainActivity extends Activity {
         }});
         nav.addView(guidePrevBtn);
 
-        guideNextBtn = cButton("下一步", true);
+        guideNextBtn = cButton("Next", true);
         LinearLayout.LayoutParams nextLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
         nextLp.leftMargin = dp(8);
         guideNextBtn.setLayoutParams(nextLp);
@@ -1222,22 +1222,22 @@ public class MainActivity extends Activity {
         int total = guidePages.size() + 1;
 
         guideDots.setText(finishPage
-                ? "准备完成 · 最后一步"
-                : "第 " + (guideIndex + 1) + " / " + total + " 步");
+                ? "Almost done · Final step"
+                : "Step " + (guideIndex + 1) + " of " + total);
         guidePrevBtn.setEnabled(guideIndex > 0);
-        guideNextBtn.setText(finishPage ? "开始使用" : "下一步");
+        guideNextBtn.setText(finishPage ? "Get started" : "Next");
         guideSkipBtn.setVisibility(finishPage ? View.GONE : View.VISIBLE);
-        guideSkipBtn.setText(guideIndex == guidePages.size() - 1 ? "跳过" : "跳过这页");
+        guideSkipBtn.setText(guideIndex == guidePages.size() - 1 ? "Skip" : "Skip this step");
 
         if (finishPage) {
             TextView t = new TextView(this);
-            t.setText("配置完成");
+            t.setText("Setup complete");
             t.setTextColor(cText());
             t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
             t.setTypeface(null, android.graphics.Typeface.BOLD);
             guideBody.addView(t, cTop(dp(18)));
 
-            guideBody.addView(cText("权限可以随时在控制台的「权限」页里再改。现在可以进入 DeepSeek Harness 了。",
+            guideBody.addView(cText("You can change permissions later from the Permissions page in the console. DeepSeek Harness is ready to use.",
                     13.5f, cSub(), false), cTop(dp(10)));
 
             // AI 工作区（可选）：沿用原来的选择逻辑
@@ -1252,7 +1252,7 @@ public class MainActivity extends Activity {
             wsRow.setLayoutParams(wslp);
             LinearLayout wsLeft = new LinearLayout(this);
             wsLeft.setOrientation(LinearLayout.VERTICAL);
-            wsLeft.addView(cText("AI 工作区（可选）", 15f, cText(), true));
+            wsLeft.addView(cText("AI workspace (optional)", 15f, cText(), true));
             workspaceDescView = new TextView(this);
             workspaceDescView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
             workspaceDescView.setTextColor(cSub());
@@ -1290,7 +1290,7 @@ public class MainActivity extends Activity {
         stRow.setOrientation(LinearLayout.HORIZONTAL);
         stRow.setGravity(Gravity.CENTER_VERTICAL);
         stRow.setPadding(0, dp(18), 0, 0);
-        stRow.addView(cText("当前状态：", 13f, cSub(), false));
+        stRow.addView(cText("Status: ", 13f, cSub(), false));
         TextView status = new TextView(this);
         status.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         stRow.addView(status);
@@ -1309,7 +1309,7 @@ public class MainActivity extends Activity {
             try { pg.action.onClick(v); } catch (Throwable ignored) {}
         }});
         act.setEnabled(!granted);
-        if (granted) act.setText("已授权 ✓");
+        if (granted) act.setText("Granted ✓");
         guideBody.addView(act);
         guideActionBtn = act;
 
@@ -1323,7 +1323,7 @@ public class MainActivity extends Activity {
         GuidePage pg = guidePages.get(guideIndex);
         boolean granted = false;
         try { granted = pg.provider.granted(); } catch (Throwable ignored) {}
-        guideActionBtn.setText(granted ? "已授权 ✓" : pg.actionLabel);
+        guideActionBtn.setText(granted ? "Granted ✓" : pg.actionLabel);
         guideActionBtn.setEnabled(!granted);
     }
 
@@ -1338,7 +1338,7 @@ public class MainActivity extends Activity {
         for (PermRow pr : permRows) {
             boolean g = false;
             try { g = pr.provider.granted(); } catch (Throwable ignored) {}
-            pr.status.setText(g ? "已授权" : "未授权");
+            pr.status.setText(g ? "Granted" : "Not granted");
             pr.status.setTextColor(g ? cGreen() : cRed());
         }
         // 工作区行状态（非权限，显示已设置/未设置）——引导完成页与控制台「权限」页共用同一份状态
@@ -1347,11 +1347,11 @@ public class MainActivity extends Activity {
             boolean unset = (p == null || p.isEmpty());
             if (workspaceDescView != null) {
                 workspaceDescView.setText(unset
-                        ? "未设置：AI 文件操作在内部目录。点此选择外部文件夹（如 /sdcard/Documents）。"
-                        : "已设置：" + p + "（点此更改或恢复默认）");
+                    ? "Not set: AI file operations use the app's internal folder. Tap to choose a folder (for example, /sdcard/Documents)."
+                    : "Set to " + p + " (tap to change or reset)");
             }
             if (conWorkspaceDesc != null) {
-                conWorkspaceDesc.setText(unset ? "未设置（AI 文件操作在内部目录）" : p);
+                conWorkspaceDesc.setText(unset ? "Not set (AI files use the internal folder)" : p);
             }
         }
         // 翻页式引导：当前页的授权按钮状态跟着"是否已授权"走（从系统设置授权回来时刷新）
@@ -1372,19 +1372,19 @@ public class MainActivity extends Activity {
         if (cur == null || cur.isEmpty()) { openWorkspacePicker(); return; }
         try {
             new AlertDialog.Builder(this)
-                    .setTitle("AI 工作区")
-                    .setMessage("当前工作区：\n" + cur + "\n\n选择其他文件夹，或恢复默认？")
-                    .setPositiveButton("重新选择", new DialogInterface.OnClickListener() {
+                    .setTitle("AI workspace")
+                    .setMessage("Current workspace:\n" + cur + "\n\nChoose another folder or restore the default?")
+                    .setPositiveButton("Choose another", new DialogInterface.OnClickListener() {
                         @Override public void onClick(DialogInterface d, int w) { openWorkspacePicker(); }
                     })
-                    .setNegativeButton("恢复默认", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Reset to default", new DialogInterface.OnClickListener() {
                         @Override public void onClick(DialogInterface d, int w) {
                             getSharedPreferences(PREFS, MODE_PRIVATE).edit().remove(KEY_WORKSPACE).apply();
                             refreshAllStatuses();
                             refreshConsolePermIfShown();
                         }
                     })
-                    .setNeutralButton("取消", null)
+                    .setNeutralButton("Cancel", null)
                     .show();
         } catch (Throwable ignored) {}
     }
@@ -1453,9 +1453,9 @@ public class MainActivity extends Activity {
                 // 工作区的列出/打开全在应用权限下跑，进会话才报"权限不足"更费解。
                 try {
                     new AlertDialog.Builder(this)
-                            .setTitle("无法使用该目录")
-                            .setMessage("该目录当前应用无权读取（多为需要 Root 的系统目录）。\n\nDSH 引擎以应用自身权限运行，工作区请选普通存储目录（如 /sdcard/Documents）。\n\nAI 需要操作系统目录时，可直接用 Shizuku/Root 特权工具，无需设为工作区。")
-                            .setPositiveButton("知道了", null)
+                            .setTitle("Folder unavailable")
+                            .setMessage("This app cannot read the selected folder. It may be a system folder that requires root.\n\nThe DSH engine runs with this app's permissions, so choose a regular storage folder such as /sdcard/Documents.\n\nTo access system folders, use Shizuku or root tools; they do not need to be set as the workspace.")
+                            .setPositiveButton("OK", null)
                             .show();
                 } catch (Throwable ignored) {}
             } else if (path != null && !path.isEmpty()) {
@@ -1465,9 +1465,9 @@ public class MainActivity extends Activity {
             } else {
                 try {
                     new AlertDialog.Builder(this)
-                            .setTitle("无法使用该目录")
-                            .setMessage("无法解析所选文件夹的真实路径，请选择手机存储（内部存储或 SD 卡）内的文件夹。")
-                            .setPositiveButton("知道了", null)
+                            .setTitle("Folder unavailable")
+                            .setMessage("The selected folder's path could not be resolved. Choose a folder in phone storage or on an SD card.")
+                            .setPositiveButton("OK", null)
                             .show();
                 } catch (Throwable ignored) {}
             }
@@ -1588,11 +1588,11 @@ public class MainActivity extends Activity {
 
         if (rootOkNow || shizukuNow) {
             AlertDialog.Builder b = new AlertDialog.Builder(this);
-            b.setTitle("系统特权（可选）");
-            b.setMessage((rootOkNow ? "已检测到 Root（su）可用，AI 可以执行系统级操作。\n" : "") +
-                    (shizukuNow ? "Shizuku 已授权，AI 可以执行系统级操作。\n" : "") +
-                    "\n不授予特权也能正常使用：文件读写、预览、编辑只需「所有文件访问」权限。");
-            b.setNegativeButton("关闭", null);
+            b.setTitle("System access (optional)");
+                b.setMessage((rootOkNow ? "Root (su) is available. AI can perform system-level actions.\n" : "") +
+                    (shizukuNow ? "Shizuku is authorized. AI can perform system-level actions.\n" : "") +
+                    "\nThe app works without privileged access. File access, preview, and editing only require All files access.");
+            b.setNegativeButton("Close", null);
             b.show();
         } else if (binderOk) {
             // 服务在运行但未授权 → 请求 Shizuku 弹授权框；若系统/ROM 没弹出来，8 秒后引导手动授权
@@ -1684,44 +1684,44 @@ public class MainActivity extends Activity {
             CharSequence l = getApplicationInfo().loadLabel(getPackageManager());
             if (l != null && l.length() > 0) label = l + "（" + getPackageName() + "）";
         } catch (Throwable ignored) {}
-        String msg = "Shizuku 的授权框没有出现（常见于 ColorOS/OPPO 等系统拦截了它的弹窗）。"
-                + "\n\n请手动授权：\n"
-                + "1. 打开 Shizuku 应用\n"
-                + "2. 进入「已授权的应用」（或首页的「授权应用」）\n"
-                + "3. 找到 " + label + " → 打开开关\n\n"
-                + "授权后回到本页会自动刷新。";
+        String msg = "The Shizuku authorization dialog did not appear. Some system versions, including ColorOS/OPPO, may block it."
+            + "\n\nAuthorize manually:\n"
+            + "1. Open the Shizuku app\n"
+            + "2. Open Authorized applications (or Authorized apps on the home page)\n"
+            + "3. Find " + label + " and enable it\n\n"
+            + "Return to this page after authorization; the status will refresh automatically.";
         AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Shizuku 授权（需手动）");
+        b.setTitle("Shizuku authorization required");
         b.setMessage(msg);
-        b.setPositiveButton("打开 Shizuku", new DialogInterface.OnClickListener() {
+        b.setPositiveButton("Open Shizuku", new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface d, int w) { openShizukuApp(); }
         });
-        b.setNeutralButton("重新检测", new DialogInterface.OnClickListener() {
-            @Override public void onClick(DialogInterface d, int w) { probeShizuku(); conToast("已重新检测"); }
+        b.setNeutralButton("Check again", new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface d, int w) { probeShizuku(); conToast("Checked again"); }
         });
-        b.setNegativeButton("关闭", null);
+        b.setNegativeButton("Close", null);
         b.show();
     }
 
     private void fallbackShizukuDialog(boolean installed) {
         String msg;
         if (installed) {
-            msg = "Shizuku 服务未运行。\n\n请先打开 Shizuku 应用并启动服务，然后回来点击「重新检测」；服务启动后本应用会自动弹出授权对话框。";
+            msg = "The Shizuku service is not running.\n\nOpen Shizuku and start its service, then return and tap Check again. This app will request authorization once the service is running.";
         } else {
-            msg = "未检测到 Shizuku 应用。请先安装 Shizuku（官方版），再回来授权。";
+            msg = "Shizuku was not found. Install the official Shizuku app, then return here to authorize access.";
         }
         AlertDialog.Builder b = new AlertDialog.Builder(this);
-        b.setTitle("Shizuku 特权");
+        b.setTitle("Shizuku access");
         b.setMessage(msg);
         if (installed) {
-            b.setPositiveButton("去启动 Shizuku", new DialogInterface.OnClickListener() {
+            b.setPositiveButton("Open Shizuku", new DialogInterface.OnClickListener() {
                 @Override public void onClick(DialogInterface d, int w) { openShizukuApp(); }
             });
         }
-        b.setNeutralButton("重新检测", new DialogInterface.OnClickListener() {
+        b.setNeutralButton("Check again", new DialogInterface.OnClickListener() {
             @Override public void onClick(DialogInterface d, int w) { probeShizuku(); }
         });
-        b.setNegativeButton("关闭", null);
+        b.setNegativeButton("Close", null);
         b.show();
     }
 
@@ -5515,27 +5515,27 @@ public class MainActivity extends Activity {
     private void conShowRescueDialog() {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.addView(cText(t("card.rescueDesc", "引擎起不来时，用安全模式跳过用户层启动（不丢数据）；也可以随时导出全部数据做备份。"),
+        box.addView(cText(t("card.rescueDesc", "If the engine will not start, use Safe Mode to skip user files without losing data. You can also export a full backup."),
                 11f, cSub(), false));
-        Button safe = cButton("安全模式启动", false);
+        Button safe = cButton("Start in Safe Mode", false);
         safe.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conSafeMode(); }
         });
         box.addView(safe, cTop(cGap(12)));
         if (bhHidden("safeMode")) safe.setVisibility(View.GONE);
-        Button exp = cButton("导出全部数据", false);
+        Button exp = cButton("Export all data", false);
         exp.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conBackupExport(); }
         });
         box.addView(exp, cTop(cGap(8)));
         if (bhHidden("export")) exp.setVisibility(View.GONE);
-        Button imp = cButton("从备份导入还原", false);
+        Button imp = cButton("Restore from backup", false);
         imp.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { closeDialogOverlay(); conBackupImport(); }
         });
         box.addView(imp, cTop(cGap(8)));
         if (bhHidden("import")) imp.setVisibility(View.GONE);
-        conDialogView("救援", box, "关闭", null, null);
+        conDialogView("Rescue", box, "Close", null, null);
     }
 
     private void renderConsoleMain() {
@@ -5596,9 +5596,167 @@ public class MainActivity extends Activity {
      */
     private String t(String key, String def) {
         ConsoleTheme ct = conTheme;
-        if (ct == null) return def;
-        String v = ct.text(key);
-        return (v == null || v.length() == 0) ? def : v;
+        if (ct != null) {
+            String v = ct.text(key);
+            if (v != null && v.length() > 0) return v;
+        }
+        switch (key) {
+            case "title.grpSessions": return "Sessions";
+            case "card.sessionadmin": return "Session manager";
+            case "desc.sessionadmin": return "Delete sessions you no longer need · moved to Trash first, so they can be restored";
+            case "card.sessionheal": return "Session repair";
+            case "desc.sessionheal": return "Repair sessions affected by broken images · only the affected message is changed";
+            case "title.grpSystem": return "System";
+            case "card.browser": return "AI browser";
+            case "desc.browser": return "See the page AI is using · interactive floating preview";
+            case "card.perm": return "Permissions";
+            case "desc.perm": return "Storage · notifications · overlay · battery · root · Shizuku · accessibility";
+            case "card.plugins": return "Plugins";
+            case "desc.plugins": return "Disable unused plugins to save context";
+            case "card.log": return "Logs";
+            case "card.theme": return "Theme";
+            case "desc.theme": return "Appearance, layout, and text are controlled by console.json · import or export here";
+            case "title.grpDiagnose": return "Diagnostics";
+            case "card.selfcheck": return "Kernel self-check";
+            case "desc.selfcheckShort": return "Manifest-based integrity check · repair ledger";
+            case "btn.extract.run": return "Extract files";
+            case "btn.engine.restart": return "Restart";
+            case "btn.engine.stop": return "Stop";
+            case "status.ready": return "Ready";
+            case "btn.rescue": return "Rescue";
+            case "card.update": return "Check for updates";
+            case "btn.shellTheme": return "App theme";
+            case "title.grpEnv": return "Runtime environment";
+            case "btn.extract.rerun": return "Extract again";
+            case "btn.extract.verify": return "Verify files";
+            case "btn.extract.detail": return "Details";
+            case "title.mypatch": return "My patches";
+            case "btn.mypatch.save": return "Save my changes as a patch";
+            case "btn.mypatch.clear": return "Clear patches (restore defaults)";
+            case "btn.mypatch.where": return "Open patch folder";
+            case "card.rescueDesc": return "If the engine will not start, use Safe Mode to skip user files without losing data. You can also export a full backup.";
+            case "desc.footer": return "Re-extract after changing the kernel version or reinstalling over this app. Normally, just tap Start engine.";
+            case "btn.engine.start": return "Start engine";
+            case "status.rescue.safe": return "Safe Mode: On";
+            case "card.rescue": return "Rescue";
+            case "desc.rescue": return "If the engine will not start, use Safe Mode to skip user files without losing data. You can also export a full backup.";
+            case "btn.rescue.exitSafe": return "Exit Safe Mode";
+            case "btn.rescue.safe": return "Start in Safe Mode";
+            case "btn.rescue.export": return "Export all data";
+            case "btn.rescue.import": return "Restore from backup";
+            case "card.actions": return "Custom actions";
+            case "desc.actions": return "Defined by the theme. Actions with a red outline ask for confirmation before running.";
+            case "desc.customPage": return "Custom page";
+            case "btn.theme.reload": return "Reload theme";
+            case "btn.theme.export": return "Export theme pack";
+            case "btn.theme.import": return "Import theme pack";
+            case "btn.theme.reset": return "Reset to default";
+            case "btn.theme.openDir": return "Open theme folder";
+            case "btn.theme.page": return "Theme settings";
+            case "btn.log.view": return "View logs";
+            case "btn.log.share": return "Share logs";
+            case "btn.log.clear": return "Clear logs";
+            case "status.theme.builtin": return "Built-in default";
+            case "status.theme.fatal": return " · fully reverted";
+            case "status.theme.reverted": return " items reverted";
+            case "title.themePage": return "Theme";
+            case "desc.themePage": return "Controls the app console appearance. Config changes take effect within seconds; no restart needed.";
+            case "title.themeStatus": return "Current theme";
+            case "title.grpThemeIo": return "Import / export";
+            case "desc.themeExport": return "Package the current theme as a ZIP, including console.json and images, ready to share.";
+            case "desc.themeImport": return "Install a theme from a ZIP. The current config is backed up first.";
+            case "btn.theme.backups": return "Saved themes";
+            case "desc.themeBackups": return "Restore defaults and previously imported configs from here.";
+            case "title.themeSpec": return "Specification and checks";
+            case "btn.theme.openSpec": return "Open specification";
+            case "desc.themeSpecShort": return "THEME-PACK-SPEC.md · IDs for cards, components, and actions";
+            case "desc.themeDir": return "console.json, background images, and the specification are stored here.";
+            case "btn.theme.diag": return "Diagnostics";
+            case "desc.themeDiag": return "View parse results, reverted settings, and page count.";
+            case "btn.theme.copyCheck": return "Copy validation command";
+            case "title.themeAi": return "Create a theme with AI";
+            case "desc.themeAi": return "Copy a prompt for an AI assistant, then import the ZIP it creates.";
+            case "btn.theme.copy": return "Copy";
+            case "title.grpThemeCare": return "Maintenance";
+            case "desc.themeReset": return "Rename console.json as a backup; restore it later from Saved themes.";
+            case "btn.theme.resetShort": return "Restore";
+            case "btn.theme.unsafe": return "Restore theme (currently using defaults)";
+            case "btn.theme.safe": return "Use default appearance (keep theme file)";
+            case "title.themeActions": return "Executable actions (disabled in this version)";
+            case "status.extract.running": return "Extracting...";
+            case "status.extract.done": return "Extracted";
+            case "status.extract.idle": return "Not extracted";
+            case "status.engine.ready": return "Engine running";
+            case "status.engine.starting": return "Starting...";
+            case "status.engine.idle": return "Stopped";
+            case "btn.engine.openUi": return "Open app";
+            case "status.serving": return "Local service is ready";
+            case "status.starting": return "Starting engine...";
+            case "status.extract.working": return "Extracting runtime and kernel...";
+            case "desc.extract": return "Extract the runtime and kernel (about 25,000 files / 220 MB) before starting the engine.";
+            case "desc.permPage": return "Tap a row to grant or manage access. Choose root or Shizuku (root is preferred).";
+            case "title.grpPermBasic": return "Basic permissions";
+            case "title.grpPermPriv": return "Privileged access (choose one)";
+            case "title.grpPermMore": return "More";
+            case "status.perm.granted": return "Granted";
+            case "status.perm.noroot": return "No root access";
+            case "status.perm.denied": return "Not granted";
+            case "desc.pluginsPage": return "Disabled plugins are not loaded or exposed to AI. Changes apply after restarting the engine.";
+            case "title.grpPlugList": return "Plugin list";
+            case "btn.plugins.restart": return "Restart engine to apply";
+            case "status.browserBusy": return "Checking...";
+            case "status.browserIdle": return "Not running";
+            case "status.browserPanelOn": return "visible";
+            case "status.browserPanelOff": return "hidden";
+            case "status.browserRunning": return "Running";
+            case "btn.browser.close": return "Close browser";
+            case "desc.browserClose": return "Close all tabs and stop the browser process. The engine will keep running.";
+            case "desc.browserPage": return "The AI browser runs in a separate process. View its current page or show an interactive preview here.";
+            case "status.browserPluginOff": return "Plugin disabled";
+            case "desc.browserPluginOff": return "Enable dsh-tool-browser on the Plugins page, then restart the engine to use browser tools.";
+            case "title.grpBrowserState": return "Browser status";
+            case "status.browserUnreachable": return "Status unavailable";
+            case "btn.browser.panel": return "Show preview";
+            case "desc.browserPanel": return "Show the page in a floating window. Drag its handle to move it; tap the handle to close it.";
+            case "title.grpBrowserTabs": return "Tabs";
+            case "status.browserNoTab": return "No tabs yet";
+            case "desc.browserNoTab": return "Tabs will appear here after AI opens a webpage.";
+            case "status.browserActive": return "Active";
+            case "btn.browser.reload": return "Refresh";
+            case "title.grpSessionList": return "Sessions";
+            case "status.readFailed": return "Read failed";
+            case "status.sessionNone": return "No sessions";
+            case "desc.sessionNone": return "Send a message in the web app and it will appear here.";
+            case "btn.session.more": return "Show more";
+            case "btn.session.load": return "Read sessions";
+            case "btn.session.reload": return "Reload";
+            case "card.sessiontrash": return "Trash";
+            case "btn.session.delete": return "Delete";
+            case "status.lastOp": return "Last action";
+            case "status.done": return "Done";
+            case "status.failed": return "Failed";
+            case "title.grpTrashList": return "Sessions in Trash";
+            case "status.trashEmpty": return "Trash is empty";
+            case "desc.trashEmptyHint": return "Deleted sessions will appear here.";
+            case "btn.session.loadTrash": return "Read trash";
+            case "btn.session.backAdmin": return "Back to sessions";
+            case "title.grpTrashCare": return "Maintenance";
+            case "btn.session.purgeAll": return "Empty Trash";
+            case "btn.session.purgeAllShort": return "Empty";
+            case "btn.session.restore": return "Restore";
+            case "btn.session.purge": return "Delete permanently";
+            case "status.lastHeal": return "Last repair";
+            case "status.noChange": return "No changes";
+            case "title.grpSessionBad": return "Scan results";
+            case "status.scanFailed": return "Scan failed";
+            case "desc.noBadSession": return "All attachment references are valid; no repair is needed.";
+            case "title.grpSessionBadList": return "Sessions with issues";
+            case "btn.session.scan": return "Scan sessions";
+            case "btn.session.rescan": return "Scan again";
+            case "title.grpLogFile": return "Log files";
+            case "btn.log.clearShort": return "Clear";
+            default: return def;
+        }
     }
 
     /**
@@ -8222,22 +8380,22 @@ public class MainActivity extends Activity {
 
         col.addView(cGrpTitle(t("title.grpPermBasic", "基本权限")), cTop(cGap(16)));
         LinearLayout c1 = cCardBox();
-        addPermRow(c1, "所有文件访问", "读写 /sdcard，AI 才能碰你的文件", "storage");
-        addPermRow(c1, "通知", "AI 发通知 / 提醒", "notify");
-        addPermRow(c1, "悬浮窗", "黑鲸鱼悬浮窗 / 虚拟屏预览", "overlay");
-        addPermRow(c1, "电池优化", "设为「不限制」，否则切后台引擎会被杀", "battery");
+        addPermRow(c1, "All files access", "Read and write files so AI can work with them", "storage");
+        addPermRow(c1, "Notifications", "AI task notifications and reminders", "notify");
+        addPermRow(c1, "Display over other apps", "Floating status panel and virtual screen preview", "overlay");
+        addPermRow(c1, "Battery optimization", "Set to Unrestricted to keep the engine running in the background", "battery");
         col.addView(c1, cTop(cGap(8)));
 
         col.addView(cGrpTitle(t("title.grpPermPriv", "特权通道（二选一）")), cTop(cGap(18)));
         LinearLayout c2 = cCardBox();
-        addPermRow(c2, "root（超级用户）", "替代 Shizuku 跑特权命令：装应用 / 改设置 / 虚拟屏点击 / 任意 shell", "root");
-        addPermRow(c2, "Shizuku（免 root 特权通道）", "有 root 时用 root；没 root 时装 Shizuku 走同一套能力", "shizuku");
+        addPermRow(c2, "Root (superuser)", "Run privileged commands: install apps, change settings, control virtual screens, and use a shell", "root");
+        addPermRow(c2, "Shizuku (no root required)", "Provides similar capabilities on devices without root access", "shizuku");
         col.addView(c2, cTop(cGap(8)));
 
         col.addView(cGrpTitle(t("title.grpPermMore", "其它")), cTop(cGap(18)));
         LinearLayout c3 = cCardBox();
-        addPermRow(c3, "无障碍服务（读屏 / 点屏）", "android_screen / tap / type / see（不需要 root 或 Shizuku）", "a11y");
-        addPermRow(c3, "安装未知应用", "android_package 装 APK 用", "install");
+        addPermRow(c3, "Accessibility (read and control screen)", "android_screen / tap / type / see (no root or Shizuku required)", "a11y");
+        addPermRow(c3, "Install unknown apps", "Required by android_package to install APKs", "install");
         // issue #30：工作区入口原先只在首启引导完成页，走完引导就再无入口（只能清数据重走引导）。
         // 这里复用同一套 onWorkspaceRowClick()，使权限页也能查看 / 更改 / 恢复默认。
         addWorkspaceRow(c3);
